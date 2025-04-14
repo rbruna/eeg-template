@@ -27,7 +27,6 @@ config.mesh       = 'bem3';
 
 % Adds the functions folders to the path.
 addpath ( sprintf ( '%s/functions/', fileparts ( pwd ) ) );
-addpath ( sprintf ( '%s/my_morph/', fileparts ( pwd ) ) );
 addpath ( sprintf ( '%s/functions/', pwd ) );
 
 % Adds, if needed, the FieldTrip folder to the path.
@@ -133,29 +132,29 @@ for file = 1: numel ( files )
         fprintf ( 1, '  Sanitizing the anatomical masks.\n' );
 
         % Padds the volumes with zeros.
-        dummy.brain        = padarray ( dummy.brain, [ 10 10 10 ] );
-        dummy.skull        = padarray ( dummy.skull, [ 10 10 10 ] );
-        dummy.scalp        = padarray ( dummy.scalp, [ 10 10 10 ] );
+        dummy.brain        = mymop_addpad3 ( dummy.brain, 10 );
+        dummy.skull        = mymop_addpad3 ( dummy.skull, 10 );
+        dummy.scalp        = mymop_addpad3 ( dummy.scalp, 10 );
         
         % Applies a bounding box to the skull and the brain.
-        dummy.skull        = dummy.skull & erodeO2 ( dummy.scalp );
-        dummy.brain        = dummy.brain & erodeO2 ( erodeO2 ( dummy.scalp ) );
+        dummy.skull        = dummy.skull & mymop_erodeO2 ( dummy.scalp );
+        dummy.brain        = dummy.brain & mymop_erodeO2 ( mymop_erodeO2 ( dummy.scalp ) );
         
         % Sanitizes the surface meshes.
-        dummy.brain        = erodeO2 ( dilateO2 ( dummy.brain ) );
-        dummy.skull        = erodeO2 ( dilateO2 ( dummy.skull ) );
-        dummy.scalp        = erodeO2 ( dilateO2 ( dummy.scalp ) );
+        dummy.brain        = mymop_erodeO2 ( mymop_dilateO2 ( dummy.brain ) );
+        dummy.skull        = mymop_erodeO2 ( mymop_dilateO2 ( dummy.skull ) );
+        dummy.scalp        = mymop_erodeO2 ( mymop_dilateO2 ( dummy.scalp ) );
         
         % Makes sure that the meshes are non-intersecting.
-    %     dummy.skull        = dummy.skull | dilateC ( dummy.brain );
-    %     dummy.scalp        = dummy.scalp | dilateC ( dummy.skull );
-        dummy.skull        = dummy.skull | dilateC ( dilateO2 ( dummy.brain ) );
-        dummy.scalp        = dummy.scalp | dilateC ( dilateO2 ( dummy.skull ) );
+    %     dummy.skull        = dummy.skull | mymop_dilate26 ( dummy.brain );
+    %     dummy.scalp        = dummy.scalp | mymop_dilate26 ( dummy.skull );
+        dummy.skull        = dummy.skull | mymop_dilate26 ( mymop_dilateO2 ( dummy.brain ) );
+        dummy.scalp        = dummy.scalp | mymop_dilate26 ( mymop_dilateO2 ( dummy.skull ) );
         
         % Removes the padding.
-        dummy.brain        = dummy.brain ( 11: end - 10, 11: end - 10, 11: end - 10 );
-        dummy.skull        = dummy.skull ( 11: end - 10, 11: end - 10, 11: end - 10 );
-        dummy.scalp        = dummy.scalp ( 11: end - 10, 11: end - 10, 11: end - 10 );
+        dummy.brain        = mymop_rmpad3 ( dummy.brain, 10 );
+        dummy.skull        = mymop_rmpad3 ( dummy.skull, 10 );
+        dummy.scalp        = mymop_rmpad3 ( dummy.scalp, 10 );
     end
 
     
