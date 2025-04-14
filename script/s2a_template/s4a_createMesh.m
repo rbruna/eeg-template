@@ -9,8 +9,9 @@ config.path.patt  = '*.mat';
 % Action when the task have already been processed.
 config.overwrite  = true;
 
-% Chooses if reslice the anatomical masks to isotropic 1mm3 voxels.
-config.reslice    = false;
+% Whether to sanitize (and reslize to 1mm3) prior to mesh generation.
+config.sanitize   = true;
+config.reslice    = true;
 
 % Origin of the masks to use. Can be SPM, pseudoCT, CT or FT (FieldTrip).
 config.maskorigin = 'SPM';
@@ -84,57 +85,79 @@ for file = 1: numel ( files )
     dummy.skull        = mri.mask ( :, :, :, skullpos );
     dummy.scalp        = mri.mask ( :, :, :, scalppos );
     
-    
-    % Checks whether the voxels are squared.
-    if abs ( det ( mri.transform ) ) - 1 > 1e-3 && any ( sum ( mri.transform ( 1: 3, 1: 3 ) .^ 2 ) - 1 > 1e-3 )
 
-        % Reslices the MRI to isotropic 1mm3 voxels, if requested.
-        if config.reslice
+    % Sanitizes the binary masks, if required.
+    if config.sanitize
+        
+        % Checks whether the voxels are squared.
+        if abs ( det ( mri.transform ) ) - 1 > 1e-3 && any ( sum ( mri.transform ( 1: 3, 1: 3 ) .^ 2 ) - 1 > 1e-3 )
+            
+            % Reslices the MRI to isotropic 1mm3 voxels, if requested.
+            if config.reslice
+                
+                fprintf ( 1, '  Reslicing the anatomical masks.\n' );
+                
+                % Converts the MRI to AC-PC coordinates.
+                dummy.transform    = mridata.transform.vox2acpc;
+                dummy.coordsys     = 'acpc';
 
-            fprintf ( 1, '  Reslicing the anatomical masks.\n' );
-
-            % Converts the MRI to AC-PC coordinates.
-            dummy.transform    = mridata.transform.vox2acpc;
-            dummy.coordsys     = 'acpc';
-
-            % Re-slices the MRI to 1x1x1 mm.
-            cfg.feedback       = 'none';
-            cfg.zrange         = [ -145 +110 ];
-
-            dummy              = ft_volumereslice ( cfg, dummy );
-
-            % Thresholds the masks.
-            dummy.brain        = dummy.brain > 0.95;
-            dummy.skull        = dummy.skull + dummy.brain > 0.95;
-            dummy.scalp        = dummy.scalp + dummy.skull + dummy.brain > 0.95;
-
-            % Goes back to the native coordinate system.
-            dummy.transform    = ( mridata.transform.vox2nat / mridata.transform.vox2acpc ) * dummy.transform;
-            dummy.coordsys     = 'ras';
-
-        else
-            warning ( 'The MRI voxels are not isometric 1mm3. Review the results carefully.' )
+                % Gets the MRI volume range.
+                edge1              = dummy.transform * [ 1 1 1 1 ]';
+                edge2              = dummy.transform * cat ( 2, dummy.dim, 1 )';
+                range              = cat ( 2, edge1, edge2 );
+                range              = sort ( range, 2 );
+                
+                % Re-slices the MRI to 1x1x1 mm.
+                cfg.feedback       = 'none';
+                cfg.xrange         = range ( 1, : );
+                cfg.yrange         = range ( 2, : );
+                cfg.zrange         = range ( 3, : );
+                
+                dummy              = ft_volumereslice ( cfg, dummy );
+                
+                % Thresholds the masks.
+                dummy.brain        = dummy.brain > 0.95;
+                dummy.skull        = dummy.skull + dummy.brain > 0.95;
+                dummy.scalp        = dummy.scalp + dummy.skull + dummy.brain > 0.95;
+                
+                % Goes back to the native coordinate system.
+                dummy.transform    = ( mridata.transform.vox2nat / mridata.transform.vox2acpc ) * dummy.transform;
+                dummy.coordsys     = 'ras';
+            
+            else
+                warning ( '  The MRI voxels are not isometric 1mm3. Review the results carefully.' )
+            end
         end
+
+
+        fprintf ( 1, '  Sanitizing the anatomical masks.\n' );
+
+        % Padds the volumes with zeros.
+        dummy.brain        = padarray ( dummy.brain, [ 10 10 10 ] );
+        dummy.skull        = padarray ( dummy.skull, [ 10 10 10 ] );
+        dummy.scalp        = padarray ( dummy.scalp, [ 10 10 10 ] );
+        
+        % Applies a bounding box to the skull and the brain.
+        dummy.skull        = dummy.skull & erodeO2 ( dummy.scalp );
+        dummy.brain        = dummy.brain & erodeO2 ( erodeO2 ( dummy.scalp ) );
+        
+        % Sanitizes the surface meshes.
+        dummy.brain        = erodeO2 ( dilateO2 ( dummy.brain ) );
+        dummy.skull        = erodeO2 ( dilateO2 ( dummy.skull ) );
+        dummy.scalp        = erodeO2 ( dilateO2 ( dummy.scalp ) );
+        
+        % Makes sure that the meshes are non-intersecting.
+    %     dummy.skull        = dummy.skull | dilateC ( dummy.brain );
+    %     dummy.scalp        = dummy.scalp | dilateC ( dummy.skull );
+        dummy.skull        = dummy.skull | dilateC ( dilateO2 ( dummy.brain ) );
+        dummy.scalp        = dummy.scalp | dilateC ( dilateO2 ( dummy.skull ) );
+        
+        % Removes the padding.
+        dummy.brain        = dummy.brain ( 11: end - 10, 11: end - 10, 11: end - 10 );
+        dummy.skull        = dummy.skull ( 11: end - 10, 11: end - 10, 11: end - 10 );
+        dummy.scalp        = dummy.scalp ( 11: end - 10, 11: end - 10, 11: end - 10 );
     end
 
-
-%     fprintf ( 1, '  Sanitizing the anatomical masks.\n' );
-% 
-%     % Applies a bounding box to the skull and the brain.
-%     dummy.skull        = dummy.skull & erodeO2 ( dummy.scalp );
-%     dummy.brain        = dummy.brain & erodeO2 ( erodeO2 ( dummy.scalp ) );
-% 
-%     % Sanitizes the surface meshes.
-%     dummy.brain        = erodeO2 ( dilateO2 ( dummy.brain ) );
-%     dummy.skull        = erodeO2 ( dilateO2 ( dummy.skull ) );
-%     dummy.scalp        = erodeO2 ( dilateO2 ( dummy.scalp ) );
-% 
-%     % Makes sure that the meshes are non-intersecting.
-% %     dummy.skull        = dummy.skull | dilateC ( dummy.brain );
-% %     dummy.scalp        = dummy.scalp | dilateC ( dummy.skull );
-%     dummy.skull        = dummy.skull | dilateC ( dilateO2 ( dummy.brain ) );
-%     dummy.scalp        = dummy.scalp | dilateC ( dilateO2 ( dummy.skull ) );
-    
     
     fprintf ( 1, '  Creating a high resolution mesh surface for the scalp.\n' );
     
