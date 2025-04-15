@@ -3,13 +3,13 @@ clear
 close all
 
 % Sets the paths.
-config.path.tpm   = '../../template/tpm/MARS_TPM.nii.gz';
+config.path.tpm   = '../../template/tpm/ICBM-NY_TPM.nii.gz';
 config.path.mni   = '../../template/mni/MNI-ICBM152_3DT1.nii.gz';
 config.path.mri   = '../../template/anatomy/';
 config.path.patt  = '*.nii.gz';
 
 % Defines the template label.
-config.subject    = 'MARS';
+config.subject    = 'ICBM-NY';
 
 
 % Adds the functions folders to the path.
