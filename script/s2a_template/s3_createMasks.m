@@ -12,7 +12,6 @@ config.overwrite = true;
 
 % Adds the functions folders to the path.
 addpath ( sprintf ( '%s/functions/', fileparts ( pwd ) ) );
-addpath ( sprintf ( '%s/my_morph/', fileparts ( pwd ) ) );
 addpath ( sprintf ( '%s/functions/', pwd ) );
 
 % Adds, if needed, the FieldTrip folder to the path.

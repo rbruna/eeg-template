@@ -22,7 +22,7 @@ skullmask  = mri.pct > threshold1;
 skullmask  = skullmask .* single ( scalpmask );
 
 % Forces the minimum skull thickness.
-skullmask  = skullmask | dilateC ( dilateC ( brainmask ) );
+skullmask  = skullmask | mymop_dilate26 ( mymop_dilate26 ( brainmask ) );
 
 
 % Gets the biggest connected element.
@@ -30,41 +30,41 @@ skullmask  = bwlabeln ( skullmask, 6 );
 skullmask  = skullmask == mode ( skullmask ( skullmask ~= 0 ) );
 
 % Fixes the skull.
-skullmask  = dilateO2 ( skullmask );
-skullmask  = imfill   ( skullmask, 'holes' );
-skullmask  = erodeO2  ( skullmask );
+skullmask  = mymop_dilateO2 ( skullmask );
+skullmask  = imfill ( skullmask, 'holes' );
+skullmask  = mymop_erodeO2 ( skullmask );
 
 
 % Goes back to the original image.
 skullmask  = skullmask & mri.pct > threshold2;
 
 % Forces the minimum skull thickness.
-skullmask  = skullmask | dilateC ( dilateC ( brainmask ) );
+skullmask  = skullmask | mymop_dilate26 ( mymop_dilate26 ( brainmask ) );
 
 % Keeps only the biggest connected element.
 skullmask  = bwlabeln ( skullmask, 6 );
 skullmask  = ( skullmask == mode ( skullmask ( skullmask ~= 0 ) ) );
 
 % Fixes the skull.
-skullmask  = dilateC  ( skullmask );
-skullmask  = imfill   ( skullmask, 'holes' );
-skullmask  = erodeC   ( skullmask );
+skullmask  = mymop_dilate26 ( skullmask );
+skullmask  = imfill ( skullmask, 'holes' );
+skullmask  = mymop_erode26 ( skullmask );
 
 return
 % Dilates the image.
-skullmask  = dilateO2 ( skullmask );
+skullmask  = mymop_dilateO2 ( skullmask );
 
 % Goes back to the original image.
 skullmask  = skullmask & mri.pct > threshold2;
 
 % Forces the minimum skull thickness.
-skullmask  = skullmask | dilateC ( dilateC ( brainmask ) );
+skullmask  = skullmask | mymop_dilate26 ( mymop_dilate26 ( brainmask ) );
 
 % Keeps only the biggest connected element.
 skullmask  = bwlabeln ( skullmask, 6 );
 skullmask  = ( skullmask == mode ( skullmask ( skullmask ~= 0 ) ) );
 
 % Fixes the skull.
-skullmask  = dilateC  ( skullmask );
-skullmask  = imfill   ( skullmask, 'holes' );
-skullmask  = erodeC   ( skullmask );
+skullmask  = mymop_dilate26 ( skullmask );
+skullmask  = imfill ( skullmask, 'holes' );
+skullmask  = mymop_erode26 ( skullmask );

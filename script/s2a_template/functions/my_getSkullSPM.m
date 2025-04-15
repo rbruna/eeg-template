@@ -36,34 +36,34 @@ skullmask  = spmmask & mri.bone > threshold1;
 skullmask  = skullmask .* single ( scalpmask );
 
 % Forces the minimum skull thickness.
-skullmask  = skullmask | dilateC ( dilateC ( brainmask ) );
+skullmask  = skullmask | mymop_dilate26 ( mymop_dilate26 ( brainmask ) );
 
 % Fixes the skull.
-skullmask  = dilateC  ( skullmask );
-skullmask  = imfill   ( skullmask, 'holes' );
-skullmask  = erodeC   ( skullmask );
+skullmask  = mymop_dilate26 ( skullmask );
+skullmask  = imfill ( skullmask, 'holes' );
+skullmask  = mymop_erode26 ( skullmask );
 
 % Gets the biggest connected element.
-skullmask  = erodeC   ( skullmask );
+skullmask  = mymop_erode26 ( skullmask );
 skullmask  = bwlabeln ( skullmask, 6 );
 skullmask  = skullmask == mode ( skullmask ( skullmask ~= 0 ) );
-skullmask  = dilateC  ( skullmask );
+skullmask  = mymop_dilate26  ( skullmask );
 
 % Dilates the image.
-skullmask  = dilateO2 ( skullmask );
+skullmask  = mymop_dilateO2 ( skullmask );
 
 
 % Goes back to the original image.
 skullmask  = spmmask & skullmask & mri.bone > threshold2;
 
 % Forces the minimum skull thickness.
-skullmask  = skullmask | dilateC ( dilateC ( brainmask ) );
+skullmask  = skullmask | mymop_dilate26 ( mymop_dilate26 ( brainmask ) );
 
 % Keeps only the biggest connected element.
 skullmask  = bwlabeln ( skullmask, 6 );
 skullmask  = ( skullmask == mode ( skullmask ( skullmask ~= 0 ) ) );
 
 % Fixes the skull.
-skullmask  = dilateC  ( skullmask );
-skullmask  = imfill   ( skullmask, 'holes' );
-skullmask  = erodeC   ( skullmask );
+skullmask  = mymop_dilate26 ( skullmask );
+skullmask  = imfill ( skullmask, 'holes' );
+skullmask  = mymop_erode26  ( skullmask );
