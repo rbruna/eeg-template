@@ -68,7 +68,7 @@ for file = 1: numel ( files )
     
     % Transforms the MNI grid to subject's native space.
     srcmodel          = srctemp.grid;
-    srcmodel          = ft_convert_units ( srcmodel, 'mm' );
+    srcmodel          = ft_convert_units ( srcmodel, transform.unit );
     srcmodel          = ft_transform_geometry ( transform.mni2nat, srcmodel );
     srcmodel          = ft_convert_units ( srcmodel, 'm' );
     
