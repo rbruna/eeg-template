@@ -31,6 +31,9 @@ fprintf ( 1, 'Loading the template file.\n' );
 % Loads the electrode definition.
 template           = ft_read_sens ( config.path.temp );
 
+% Converts the electrode definition into SI units (meters).
+template           = ft_convert_units ( template, 'm' );
+
 % Generates a fiducial structure.
 if ~isfield ( template, 'fid' ) && all ( ismember ( { 'LPA', 'Nz', 'RPA' }, template.label ) )
     
@@ -121,27 +124,14 @@ for findex = 1: numel ( files )
         elec.chanpos       = elec.chanpos * scale;
         elec.fid.pos       = elec.fid.pos * scale;
     end
-    
-    
-    fprintf ( 1, '  Transforming the sensor definition to the template space.\n' );
-    
-    % % Transforms the electrode definition to native space.
-    % trans              = headdata.transform.vox2nat / headdata.transform.vox2nm;
-    % elec               = ft_convert_units ( elec, headdata.transform.unit );
-    % elec               = ft_transform_geometry ( trans, elec );
-    % elec               = ft_convert_units ( elec, 'm' );
 
-    % Matches the fiducials in the sensor definition and the template.
-    trans              = my_fitFiducials ( scalp, elec );
-    elec               = ft_transform_geometry ( trans, elec );
-    
     
     fprintf ( 1, '  Saving the sensor definition.\n' );
     
     % Sets the transformation data.
     mriinfo            = [];
     mriinfo.mrifile    = sprintf ( '%s%s', config.path.head, files ( findex ).name );
-    mriinfo.transform  = eye (4);
+    mriinfo.transform  = trans;
     mriinfo.unit       = elec.unit;
 
     % Sets the head shape.
