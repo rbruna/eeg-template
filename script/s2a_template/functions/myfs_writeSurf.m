@@ -1,4 +1,4 @@
-function my_FSWriteSurf ( filename, varargin )
+function myfs_writeSurf ( filename, varargin )
 
 %MY_FSWRITESURF  Generate FreeSurfer surface files.
 % 
