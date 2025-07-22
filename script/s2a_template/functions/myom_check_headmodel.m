@@ -85,7 +85,7 @@ pnt = bnd.pos;
 tri = bnd.tri;
 
 % Centers the mesh in the origin.
-pnt = bsxfun ( @minus, pnt, mean ( pnt ) );
+pnt = pnt - mean ( pnt );
 
 % Gets the solid angle of the mesh.
 sa  = sum ( my_solang ( pnt, tri ) );
@@ -138,7 +138,7 @@ for i = 1: nbnd
             pnt = bnd ( i ).pos ( pnt, : );
             
             % Centers the mesh j in the selected point.
-            tmp = bsxfun ( @minus, bnd ( j ).pos, pnt );
+            tmp = bnd ( j ).pos - pnt;
             
             % Calculates the solid angle of the mesh j.
             sang  = sum ( my_solang ( tmp, bnd ( j ).tri ), 'omitnan' );
