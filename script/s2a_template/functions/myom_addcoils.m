@@ -19,7 +19,7 @@ if ~ismeg, error ( 'This function can only by used with a MEG sensor definition.
 if ~xor ( ismeg, iseeg ), error ( 'The sensor type could not be identified as EEG or MEG. Aborting.\n' ); end
 
 
-global my_silent
+global my_silent %#ok<GVMIS>
 my_silent  = ~isempty ( my_silent ) && my_silent;
 
 

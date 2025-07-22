@@ -2,7 +2,7 @@ function headmodel = myom_build_src ( headmodel, clean )
 
 % Joins the head and source matrices, if both available.
 
-global my_silent;
+global my_silent; %#ok<GVMIS>
 my_silent = ~isempty ( my_silent ) && my_silent;
 
 

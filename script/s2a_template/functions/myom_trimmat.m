@@ -4,7 +4,7 @@ function headmodel = myom_trimmat ( headmodel )
 % nodes in the scalp (outermost) mesh.
 
 
-global my_silent;
+global my_silent; %#ok<GVMIS>
 my_silent = ~isempty ( my_silent ) && my_silent;
 
 

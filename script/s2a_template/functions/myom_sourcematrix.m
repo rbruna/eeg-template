@@ -7,7 +7,7 @@ function headmodel = myom_sourcematrix ( headmodel, grid )
 % * openmeeg_dsm by Alexandre Gramfort
 % * openmeeg_megm by Emmanuel Olivi
 
-global my_silent
+global my_silent %#ok<GVMIS>
 my_silent  = ~isempty ( my_silent ) && my_silent;
 
 

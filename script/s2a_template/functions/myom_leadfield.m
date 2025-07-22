@@ -7,7 +7,7 @@ function leadfield = myom_leadfield ( headmodel, grid, sens )
 % * openmeeg_dsm by Alexandre Gramfort
 % * openmeeg_megm by Emmanuel Olivi
 
-global my_silent;
+global my_silent; %#ok<GVMIS>
 my_silent = ~isempty ( my_silent ) && my_silent;
 
 

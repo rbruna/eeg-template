@@ -2,7 +2,7 @@ function headmodel = myom_headmodel ( headmodel )
 % Based on FiedTrip functions:
 % * ft_headmodel_openmeeg
 
-global my_silent
+global my_silent %#ok<GVMIS>
 my_silent = ~isempty ( my_silent ) && my_silent;
 
 

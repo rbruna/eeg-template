@@ -1,6 +1,6 @@
 function headmodel = myom_check_headmodel ( headmodel )
 
-global my_silent;
+global my_silent; %#ok<GVMIS>
 my_silent = ~isempty ( my_silent ) && my_silent;
 
 
@@ -141,7 +141,7 @@ for i = 1: nbnd
             tmp = bsxfun ( @minus, bnd ( j ).pos, pnt );
             
             % Calculates the solid angle of the mesh j.
-            sang  = nansum ( my_solang ( tmp, bnd ( j ).tri ) );
+            sang  = sum ( my_solang ( tmp, bnd ( j ).tri ), 'omitnan' );
             sangs = sangs + abs ( sang );
         end
         

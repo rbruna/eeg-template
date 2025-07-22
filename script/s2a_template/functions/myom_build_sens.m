@@ -2,7 +2,7 @@ function headmodel = myom_build_sens ( headmodel, clean )
 
 % Joins the head and sensor matrices, if both available.
 
-global my_silent;
+global my_silent; %#ok<GVMIS>
 my_silent = ~isempty ( my_silent ) && my_silent;
 
 
