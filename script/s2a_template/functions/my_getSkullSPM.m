@@ -41,13 +41,13 @@ skullmask  = skullmask | mymop_dilate26 ( mymop_dilate26 ( brainmask ) );
 % Fixes the skull.
 skullmask  = mymop_dilate26 ( skullmask );
 skullmask  = imfill ( skullmask, 'holes' );
-skullmask  = mymop_erode26 ( skullmask );
+skullmask  = mymop_erode26  ( skullmask );
 
 % Gets the biggest connected element.
-skullmask  = mymop_erode26 ( skullmask );
+skullmask  = mymop_erode26  ( skullmask );
 skullmask  = bwlabeln ( skullmask, 6 );
 skullmask  = skullmask == mode ( skullmask ( skullmask ~= 0 ) );
-skullmask  = mymop_dilate26  ( skullmask );
+skullmask  = mymop_dilate26 ( skullmask );
 
 % Dilates the image.
 skullmask  = mymop_dilateO2 ( skullmask );

@@ -4,6 +4,6 @@ function asegmask = my_getBrainFS ( mri )
 asegmask   = mri.aseg > 0;
 
 % Fixes the mask.
-asegmask   = dilateO2 ( asegmask );
-asegmask   = imfill   ( asegmask, 'holes' );
-asegmask   = erodeO2  ( asegmask );
+asegmask   = mymop_dilateO2 ( asegmask );
+asegmask   = imfill ( asegmask, 'holes' );
+asegmask   = mymop_erodeO2  ( asegmask );

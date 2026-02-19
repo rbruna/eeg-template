@@ -30,7 +30,7 @@ skullmask  = skullmask == mode ( skullmask ( skullmask ~= 0 ) );
 % Fixes the skull.
 skullmask  = mymop_dilateO2 ( skullmask );
 skullmask  = imfill ( skullmask, 'holes' );
-skullmask  = mymop_erodeO2 ( skullmask );
+skullmask  = mymop_erodeO2  ( skullmask );
 
 
 % Goes back to the original image.
@@ -45,5 +45,5 @@ skullmask  = ( skullmask == mode ( skullmask ( skullmask ~= 0 ) ) );
 
 % Fixes the skull.
 skullmask  = mymop_dilate26 ( skullmask );
-skullmask  = imfill   ( skullmask, 'holes' );
-skullmask  = mymop_erode26 ( skullmask );
+skullmask  = imfill ( skullmask, 'holes' );
+skullmask  = mymop_erode26  ( skullmask );

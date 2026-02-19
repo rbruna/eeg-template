@@ -7,7 +7,7 @@ function skullmask = my_getSkullBS ( mri )
 
 % Transforms the MRI to uint8.
 fullmri    = mri.anatomy;
-dummy      = hist ( floor ( fullmri (:) ), 0: 65536 );
+dummy      = histcounts ( floor ( fullmri (:) ), 0: 65536 );
 maxval     = find ( cumsum ( dummy ) > floor ( 0.999 * numel ( fullmri ) ), 1 );
 
 fullmri    = floor ( ( fullmri * 255 ) / maxval );
@@ -28,8 +28,8 @@ sT  = floor ( ( lST + uST ) / 2 );
 
 % Gets the scalp.
 scalpmask  = fullmri >= sT;
-scalpmask  = scalpmask | dilateC ( brainmask );
-scalpmask  = scalpmask | dilateC ( mri.white + mri.gray + mri.csf + mri.bone > 128 );
+scalpmask  = scalpmask | mymop_dilate26 ( brainmask );
+scalpmask  = scalpmask | mymop_dilate26 ( mri.white + mri.gray + mri.csf + mri.bone > 128 );
 scalpmask ( :, 10, : ) = true;
 
 % Fixes the scalp.
@@ -46,19 +46,19 @@ scalpmask  = scalpmask == mode ( scalpmask ( scalpmask ~= 0 ) );
 skullmask  = fullmri < lST;
 
 % Forces the minimum skull thickness.
-skullmask  = skullmask | dilateC ( dilateC ( brainmask ) );
+skullmask  = skullmask | mymop_dilate26 ( dilateC ( brainmask ) );
 
 
 % Gets an eroded version of the scalp as an upper boundary for the skull.
 skullmax   = scalpmask;
-skullmax   = erodeC   ( skullmax ); skullmax = erodeC   ( skullmax ); skullmax = erodeC   ( skullmax );
-skullmax   = erodeC   ( skullmax ); skullmax = erodeC   ( skullmax ); skullmax = erodeC   ( skullmax );
-skullmax   = erodeC   ( skullmax ); skullmax = erodeC   ( skullmax ); skullmax = erodeC   ( skullmax );
-skullmax   = erodeC   ( skullmax ); skullmax = erodeC   ( skullmax ); skullmax = erodeC   ( skullmax );
-skullmax   = dilateC  ( skullmax ); skullmax = dilateC  ( skullmax ); skullmax = dilateC  ( skullmax );
-skullmax   = dilateC  ( skullmax ); skullmax = dilateC  ( skullmax ); skullmax = dilateC  ( skullmax );
-skullmax   = dilateC  ( skullmax ); skullmax = dilateC  ( skullmax ); skullmax = dilateC  ( skullmax );
-skullmax   = dilateC  ( skullmax );
+skullmax   = mymop_erode26  ( skullmax ); skullmax = mymop_erode26  ( skullmax ); skullmax = mymop_erode26  ( skullmax );
+skullmax   = mymop_erode26  ( skullmax ); skullmax = mymop_erode26  ( skullmax ); skullmax = mymop_erode26  ( skullmax );
+skullmax   = mymop_erode26  ( skullmax ); skullmax = mymop_erode26  ( skullmax ); skullmax = mymop_erode26  ( skullmax );
+skullmax   = mymop_erode26  ( skullmax ); skullmax = mymop_erode26  ( skullmax ); skullmax = mymop_erode26  ( skullmax );
+skullmax   = mymop_dilate26 ( skullmax ); skullmax = mymop_dilate26 ( skullmax ); skullmax = mymop_dilate26 ( skullmax );
+skullmax   = mymop_dilate26 ( skullmax ); skullmax = mymop_dilate26 ( skullmax ); skullmax = mymop_dilate26 ( skullmax );
+skullmax   = mymop_dilate26 ( skullmax ); skullmax = mymop_dilate26 ( skullmax ); skullmax = mymop_dilate26 ( skullmax );
+skullmax   = mymop_dilate26 ( skullmax );
 
 % Forces the minimum scalp thickness.
 skullmask  = skullmask & skullmax;
@@ -68,10 +68,10 @@ skullmask  = bwlabeln ( skullmask, 6 );
 skullmask  = ( skullmask == mode ( skullmask ( skullmask ~= 0 ) ) );
 
 % Fixes the skull.
-skullmask  = dilateO2 ( skullmask );
-skullmask  = dilateO2 ( skullmask );
-skullmask  = erodeO2  ( skullmask );
-skullmask  = erodeO2  ( skullmask );
+skullmask  = mymop_dilateO2 ( skullmask );
+skullmask  = mymop_dilateO2 ( skullmask );
+skullmask  = mymop_erodeO2  ( skullmask );
+skullmask  = mymop_erodeO2  ( skullmask );
 
 % Forces the minimum scalp thickness.
 skullmask  = skullmask & skullmax;
@@ -99,5 +99,5 @@ skullmask  = skullmask & skullmax;
 % scalpmask  = scalpmask | dilateC ( skullmask );
 
 
-skull = skullmask;
-ft_write_mri ( 'skull_BS.nii', skull, 'dataformat', 'nifti', 'transform', mri.transform );
+% skull = skullmask;
+% ft_write_mri ( 'skull_BS.nii', skull, 'dataformat', 'nifti', 'transform', mri.transform );

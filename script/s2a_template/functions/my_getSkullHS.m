@@ -20,13 +20,13 @@ else
 end
 
 % Fixes the mask.
-brainmask  = dilateC  ( brainmask );
-brainmask  = imfill   ( brainmask, 'holes' );
-brainmask  = erodeC   ( brainmask );
+brainmask  = mymop_dilate26 ( brainmask );
+brainmask  = imfill ( brainmask, 'holes' );
+brainmask  = mymop_erode26  ( brainmask );
 
 % Gets the scalp mask.
 scalpmask  = mri.scalp;
-scalpmask  = dilateR  ( scalpmask );
+scalpmask  = mymop_dilate06 ( scalpmask );
 
 
 fprintf ( 1, 'Creating a mask for the outter skull.\n' );
@@ -46,16 +46,16 @@ fprintf ( 1, 'Fixing errors in the outter skull mask.\n' );
 
 % Gets an eroded version of the scalp as an upper boundary for the skull.
 skullmax   = scalpmask;
-skullmax   = erodeC   ( skullmax ); skullmax = erodeC   ( skullmax ); skullmax = erodeC   ( skullmax );
-skullmax   = erodeC   ( skullmax ); skullmax = erodeC   ( skullmax );
+skullmax   = mymop_erode26 ( skullmax ); skullmax = mymop_erode26 ( skullmax ); skullmax = mymop_erode26 ( skullmax );
+skullmax   = mymop_erode26 ( skullmax ); skullmax = mymop_erode26 ( skullmax );
 
 % Forces the minimum scalp thickness to 5 mm.
 skullmask  = skullmask & skullmax;
 
 % Fixes the mask.
-skullmask  = dilateC  ( skullmask );
-skullmask  = imfill   ( skullmask, 'holes' );
-skullmask  = erodeC   ( skullmask );
+skullmask  = mymop_dilate26 ( skullmask );
+skullmask  = imfill ( skullmask, 'holes' );
+skullmask  = mymop_erode26  ( skullmask );
 
 % Gets the biggest connected element.
 skullmask  = bwlabeln ( skullmask, 6 );
@@ -74,9 +74,9 @@ opt.distbound = 1;
 skullmask  = surf2vol ( pnt, tri, -1: mri.dim (1) - 2, -1: mri.dim (2) - 2, -1: mri.dim (3) - 2 );
 
 % Fixes the mask.
-skullmask  = dilateC  ( skullmask );
-skullmask  = imfill   ( skullmask, 'holes' );
-skullmask  = erodeC   ( skullmask );
+skullmask  = mymop_dilate26 ( skullmask );
+skullmask  = imfill ( skullmask, 'holes' );
+skullmask  = mymop_erode26  ( skullmask );
 
 % Forces the minimum scalp thickness to 5 mm.
 skullmask  = skullmask & skullmax;
@@ -85,10 +85,10 @@ skullmask  = skullmask & skullmax;
 fprintf ( 1, 'Creating a mask for the inner skull.\n' );
 
 % Removes anything outside the skull.
-headonly   = mri.anatomy .* erodeR ( skullmask );
+headonly   = mri.anatomy .* mymop_erode06 ( skullmask );
 
 % Creating a mask for the inner skull.
-duramask   = ( headonly > thresh2 ) | erodeR ( brainmask );
+duramask   = ( headonly > thresh2 ) | mymop_erode06 ( brainmask );
 
 
 fprintf ( 1, 'Fixing errors in the inner skull mask.\n' );
@@ -96,15 +96,15 @@ fprintf ( 1, 'Fixing errors in the inner skull mask.\n' );
 % Gets an eroded version of the outter skull as an upper boundary for the
 % inner skull.
 iskullmin  = scalpmask;
-iskullmin  = erodeC   ( iskullmin ); iskullmin = erodeC   ( iskullmin ); iskullmin = erodeC   ( iskullmin );
-iskullmin  = erodeC   ( iskullmin ); iskullmin = erodeC   ( iskullmin ); iskullmin = erodeC   ( iskullmin );
-iskullmin  = erodeC   ( iskullmin ); iskullmin = erodeC   ( iskullmin ); iskullmin = erodeC   ( iskullmin );
-iskullmin  = erodeC   ( iskullmin ); iskullmin = erodeC   ( iskullmin ); iskullmin = erodeC   ( iskullmin );
-iskullmin  = erodeC   ( iskullmin ); iskullmin = erodeC   ( iskullmin ); iskullmin = erodeC   ( iskullmin );
+iskullmin  = mymop_erode26 ( iskullmin ); iskullmin = mymop_erode26 ( iskullmin ); iskullmin = mymop_erode26 ( iskullmin );
+iskullmin  = mymop_erode26 ( iskullmin ); iskullmin = mymop_erode26 ( iskullmin ); iskullmin = mymop_erode26 ( iskullmin );
+iskullmin  = mymop_erode26 ( iskullmin ); iskullmin = mymop_erode26 ( iskullmin ); iskullmin = mymop_erode26 ( iskullmin );
+iskullmin  = mymop_erode26 ( iskullmin ); iskullmin = mymop_erode26 ( iskullmin ); iskullmin = mymop_erode26 ( iskullmin );
+iskullmin  = mymop_erode26 ( iskullmin ); iskullmin = mymop_erode26 ( iskullmin ); iskullmin = mymop_erode26 ( iskullmin );
 
 
 % Forces the minimum CSF thickness to 1 mm.
-duramask   = duramask | dilateR ( brainmask );
+duramask   = duramask | mymop_dilate06 ( brainmask );
 
 % Forces the maximum skull thickness to 15 mm.
 duramask   = duramask | iskullmin;
@@ -126,17 +126,17 @@ opt.distbound = 1;
 duramask   = surf2vol ( pnt, tri, -1: mri.dim (1) - 2, -1: mri.dim (2) - 2, -1: mri.dim (3) - 2 );
 
 % Fixes the mask.
-duramask   = dilateC  ( duramask );
-duramask   = imfill   ( duramask, 'holes' );
-duramask   = erodeC   ( duramask );
+duramask   = mymop_dilate26 ( duramask );
+duramask   = imfill ( duramask, 'holes' );
+duramask   = mymop_erode26  ( duramask );
 
 % Forces the minimum CSF thickness to 1 mm.
-duramask   = duramask | dilateR ( brainmask );
+duramask   = duramask | mymop_dilate06 ( brainmask );
 
 % Forces the maximum skull thickness to 15 mm.
 duramask   = duramask | iskullmin;
 
 
 
-skull = skullmask;
-ft_write_mri ( 'skull_HS.nii', skull, 'dataformat', 'nifti' );
+% skull = skullmask;
+% ft_write_mri ( 'skull_HS.nii', skull, 'dataformat', 'nifti' );
