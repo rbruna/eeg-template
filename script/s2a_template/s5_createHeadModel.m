@@ -12,8 +12,10 @@ config.overwrite = true;
 % Forward model ('singleshell' or 'auto').
 config.model     = 'auto';
 
-% Specific options for OpenMEEG.
-config.trim      = true;
+% If the data will only be used for EEG, trims the head matrix.
+config.trim      = false;
+
+% If no dipole fitting, removes the head matrix after calculating hm\dsm.
 config.clean     = true;
 
 
@@ -100,7 +102,6 @@ for findex = 1: numel ( files )
         headmodel        = myom_sourcematrix ( headmodel, headdata.grid );
 %         headmodel.dsm    = myom_dsm ( headmodel, headdata.grid );
 %         headmodel.grid   = headdata.grid;
-        
         
         % Calculates hm\dsm.
         headmodel        = myom_build_src ( headmodel, config.clean );

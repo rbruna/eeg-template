@@ -36,16 +36,16 @@ if ~exist ( config.path.figs, 'dir' ), mkdir ( config.path.figs ); end
 files = dir ( sprintf ( '%s%s', config.path.head, config.path.patt ) );
 
 % Goes through all the files.
-for file = 1: numel ( files )
+for findex = 1: numel ( files )
     
     % Pre-loads the data.
-    headdata      = load ( sprintf ( '%s%s', config.path.head, files ( file ).name ), 'subject' );
+    headdata      = load ( sprintf ( '%s%s', config.path.head, files ( findex ).name ), 'subject' );
     
     
     fprintf ( 1, 'Working with subject %s.\n', headdata.subject );
     
     % Loads the MRI data and extracts the masks.
-    headdata      = load ( sprintf ( '%s%s', config.path.head, files ( file ).name ), 'subject', 'mri', 'mesh', 'grid' );
+    headdata      = load ( sprintf ( '%s%s', config.path.head, files ( findex ).name ), 'subject', 'mri', 'mesh', 'grid' );
     
     % If BEM checks the surfaces.
     if numel ( headdata.mesh.bnd ) == 3

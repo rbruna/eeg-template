@@ -32,13 +32,13 @@ if ~exist ( config.path.figs, 'dir' ), mkdir ( config.path.figs ); end
 files = dir ( sprintf ( '%s%s', config.path.sens, config.path.patt ) );
 
 % Goes through all the files.
-for file = 1: numel ( files )
+for findex = 1: numel ( files )
     
     % Clears the command window.
     clc
     
     % Loads the MRI data and extracts the masks.
-    sensdata      = load ( sprintf ( '%s%s', config.path.sens, files ( file ).name ) );
+    sensdata      = load ( sprintf ( '%s%s', config.path.sens, files ( findex ).name ) );
     
 
     % Loads the MRI-based headmodel and grid.

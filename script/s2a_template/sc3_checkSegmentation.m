@@ -29,16 +29,16 @@ if ~exist ( config.path.figs, 'dir' ), mkdir ( config.path.figs ); end
 files = dir ( sprintf ( '%s%s', config.path.mri, config.path.patt ) );
 
 % Goes through all the files.
-for file = 1: numel ( files )
+for findex = 1: numel ( files )
     
     % Pre-loads the MRI.
-    mridata          = load ( sprintf ( '%s%s', config.path.mri, files ( file ).name ), 'subject' );
+    mridata          = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject' );
     
     
     fprintf ( 1, 'Working on subject %s.\n', mridata.subject );
     
     % Loads the MRI.
-    mridata          = load ( sprintf ( '%s%s', config.path.mri, files ( file ).name ), 'subject', 'mri' );
+    mridata          = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'mri' );
     mri              = my_unpackmri ( mridata.mri );
     
     % Gets the segmented MRI.

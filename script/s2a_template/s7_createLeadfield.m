@@ -164,7 +164,7 @@ for file = 1: numel ( files )
     cfg.headmodel      = headdata.headmodel;
     cfg.sourcemodel    = headdata.grid;
     
-    % Calculates the leadfield for MEG.
+    % Calculates the lead field for MEG.
     if hasmeg
         cfg.sens           = grad;
         cfg.channel        = grad.label;
@@ -172,7 +172,7 @@ for file = 1: numel ( files )
         srcmodel_meg       = my_leadfield ( cfg );
     end
     
-    % Calculates the leadfield for EEG.
+    % Calculates the lead field for EEG.
     if haseeg
         cfg.sens           = elec;
         cfg.channel        = elec.label;
@@ -180,7 +180,7 @@ for file = 1: numel ( files )
         srcmodel_eeg       = my_leadfield ( cfg );
     end
     
-    % Joins the leadfields, if required.
+    % Joins the lead fields, if required.
     if hasmeg && haseeg
         srcmodel           = my_joinGrid ( srcmodel_meg, srcmodel_eeg );
     elseif hasmeg
@@ -192,7 +192,7 @@ for file = 1: numel ( files )
     
     fprintf ( 1, '  Saving calculated lead field.\n' );
     
-    % Initializes the leadfield variable.
+    % Initializes the lead field variable.
     leaddata           = [];
     leaddata.subject   = transinfo.subject;
     leaddata.channel   = srcmodel.label;
@@ -202,6 +202,6 @@ for file = 1: numel ( files )
     leaddata.mesh      = headdata.mesh;
     leaddata.grid      = srcmodel;
     
-    % Saves the leadfield.
+    % Saves the lead field.
     save ( '-v6', sprintf ( '%s%s', config.path.lead, transinfo.subject ), '-struct', 'leaddata' );
 end

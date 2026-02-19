@@ -84,11 +84,11 @@ for file = 1: numel ( files )
     dummy.skull        = mri.mask ( :, :, :, skullpos );
     dummy.scalp        = mri.mask ( :, :, :, scalppos );
     
-
+    
     % Sanitizes the binary masks, if required.
     if config.sanitize
         
-        % Checks whether the voxels are squared.
+        % Checks whether the voxels are square.
         if abs ( det ( mri.transform ) ) - 1 > 1e-3 && any ( sum ( mri.transform ( 1: 3, 1: 3 ) .^ 2 ) - 1 > 1e-3 )
             
             % Reslices the MRI to isotropic 1mm3 voxels, if requested.
@@ -122,13 +122,13 @@ for file = 1: numel ( files )
                 % Goes back to the native coordinate system.
                 dummy.transform    = ( mridata.transform.vox2nat / mridata.transform.vox2acpc ) * dummy.transform;
                 dummy.coordsys     = 'ras';
-            
+                
             else
                 warning ( '  The MRI voxels are not isometric 1mm3. Review the results carefully.' )
             end
         end
-
-
+        
+        
         fprintf ( 1, '  Sanitizing the anatomical masks.\n' );
 
         % Padds the volumes with zeros.
@@ -146,8 +146,8 @@ for file = 1: numel ( files )
         dummy.scalp        = mymop_erodeO2 ( mymop_dilateO2 ( dummy.scalp ) );
         
         % Makes sure that the meshes are non-intersecting.
-    %     dummy.skull        = dummy.skull | mymop_dilate26 ( dummy.brain );
-    %     dummy.scalp        = dummy.scalp | mymop_dilate26 ( dummy.skull );
+%         dummy.skull        = dummy.skull | mymop_dilate26 ( dummy.brain );
+%         dummy.scalp        = dummy.scalp | mymop_dilate26 ( dummy.skull );
         dummy.skull        = dummy.skull | mymop_dilate26 ( mymop_dilateO2 ( dummy.brain ) );
         dummy.scalp        = dummy.scalp | mymop_dilate26 ( mymop_dilateO2 ( dummy.skull ) );
         
