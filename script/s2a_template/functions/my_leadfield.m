@@ -228,7 +228,7 @@ switch headmodel.type
     % MNE BEM.
     case { 'mne' }
         
-        % Calculates the leadfield.
+        % Calculates the lead field.
         leadfield = mymne_leadfield ( cfg.headmodel, srcmodel, sens, cfg.header );
         
     % Infinite medium, magnetic dipoles.
