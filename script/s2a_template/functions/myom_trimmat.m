@@ -56,7 +56,7 @@ if isfield ( headmodel, 'h2em' )
     % Keeps only the potential related to the scalp nodes.
     headmodel.th2em   = headmodel.h2em ( :, sindex );
     
-    % Removes the original hm/dsm matrix.
+    % Removes the original electrodes matrix.
     headmodel         = rmfield ( headmodel, 'h2em' );
 end
 
