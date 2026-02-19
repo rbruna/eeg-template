@@ -59,9 +59,7 @@ precov ( strcmp ( senstype, 'megplanar' ) ) = 5e-13;
 precov ( strcmp ( senstype, 'eeg'       ) ) = 2e-07;
 
 % Calculates the covariance matrix.
-% cov     = precov * precov';
 cov     = diag ( precov .^ 2 );
-warning ( 'This was different before.' )
 
 
 function senstype = my_senstype ( label )
