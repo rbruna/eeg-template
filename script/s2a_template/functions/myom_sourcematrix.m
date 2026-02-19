@@ -65,6 +65,34 @@ headmodel.dsm = importdata ( sprintf ( '%s_dsm.mat', basename ) );
 delete ( sprintf ( '%s*', basename ) );
 
 
+% % If the headmodel matrix is present calculates hm_dsm.
+% if isfield ( headmodel, 'hm' )
+% 
+%     if ~my_silent, fprintf ( 1, 'Calculating inv ( hm ) * dsm.\n' ); end
+% 
+%     % Transforms the head model matrix to a symmetric matrix.
+%     if isstruct ( headmodel.hm )
+%         headmodel.hm = myom_struct2sym ( headmodel.hm );
+%     end
+% 
+%     % Calculates inv ( hm ) * dsm.
+%     headmodel.hm_dsm = headmodel.hm \ headmodel.dsm;
+% 
+%     % Deletes the head model and sources matrices to save memory.
+%     headmodel = rmfield ( headmodel, { 'hm' 'dsm' } );
+% 
+% elseif isfield ( headmodel, 'ihm' )
+% 
+%     if ~my_silent, fprintf ( 1, 'Calculating inv ( hm ) * dsm.\n' ); end
+% 
+%     % Calculates inv ( hm ) * dsm.
+%     headmodel.hm_dsm = headmodel.ihm * headmodel.dsm;
+% 
+%     % Deletes the sources matrix to save memory.
+%     headmodel = rmfield ( headmodel, 'dsm' );
+% end
+
+
 % Stores the grid with the head model.
 headmodel.grid = grid;
 
