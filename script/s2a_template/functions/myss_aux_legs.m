@@ -53,16 +53,12 @@ basis ( 1, :, : ) = [];
 
 % Corrects the polinomials.
 ephi  = permute ( exp ( 1i * phi * ( 0: order ) ), [ 3 2 1 ] );
-% radin = permute ( bsxfun ( @power, radi, 1: order ), [ 2 3 1 ] );
-% basis = bsxfun ( @times, basis, (-1) .^ ( 0: order ) );
-% basis = basis .* bsxfun ( @times, ephi, radin );
 radin = permute ( radi .^ ( 1: order ), [ 2 3 1 ] );
 basis = basis .* ( (-1) .^ ( 0: order ) );
 basis = basis .* double ( ephi .* radin );
 
 
 % Calculates the shifting factors.
-% shifts = bsxfun ( @plus, ( 1: order )', ( 1: order + 1 ) );
 shifts = ( 1: order )' + ( 1: order + 1 );
 shiftfactors = shifts - 1;
 shiftminusfactors = ( shifts - 1 ) .* ( shifts - 2 );
@@ -77,15 +73,12 @@ legshiftplus ( :, order + 1, : ) = 0;
 legshiftminus ( :, 2: order + 1, : ) = legshift ( :, 1: order, : );
 legshiftminus ( :, 1, : ) = -conj ( legshift ( :, 2, : ) );
 
-% legshift = bsxfun ( @times, legshift, shiftfactors );
-% legshiftminus = bsxfun ( @times, legshiftminus, shiftminusfactors );
 legshift = legshift .* shiftfactors;
 legshiftminus = legshiftminus .* shiftminusfactors;
 
 
 dirp=[(xori(:,1)+xori(:,2)/1i)/2,(xori(:,1)-xori(:,2)/1i)/2,xori(:,3)];
 
-% gradbasis = sum ( bsxfun ( @times, permute ( dirp, [ 3 4 1 2 ] ), cat ( 4, legshiftplus, legshiftminus, legshift ) ), 4 );
 gradbasis = sum ( permute ( dirp, [ 3 4 1 2 ] ) .* cat ( 4, legshiftplus, legshiftminus, legshift ), 4 );
 
 
@@ -100,8 +93,6 @@ end
 normalize ( :, 1 ) = normalize ( :, 1 ) * sqrt (2);
 
 % Normalizes the data.
-% basis = bsxfun ( @rdivide, basis, normalize );
-% gradbasis = bsxfun ( @rdivide, gradbasis, normalize );
 basis = basis ./ normalize;
 gradbasis = gradbasis ./ normalize;
 
