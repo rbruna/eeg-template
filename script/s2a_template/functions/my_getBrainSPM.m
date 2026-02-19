@@ -14,6 +14,7 @@ function [output] = volumesmooth(input, fwhm)
 %
 % See also VOLUMETHRESHOLD, VOLUMEFILLHOLES
 
+% Private function from FieldTrip 20200130.
 
 % check for any version of SPM
 if ~ft_hastoolbox('spm')
@@ -26,6 +27,7 @@ output = input+0;
 % the mex files underneath the spm function will change the input variable
 spm_smooth(output, output, fwhm);
 
+
 function [output] = volumethreshold(input, thresh)
 
 % VOLUMETHRESHOLD is a helper function for segmentations. It applies a
@@ -33,6 +35,8 @@ function [output] = volumethreshold(input, thresh)
 % thereby removing small blobs such as vitamine E capsules.
 %
 % See also VOLUMEFILLHOLES, VOLUMESMOOTH
+
+% Private function from FieldTrip 20200130.
 
 % check for SPM8 or later, add to the path if not present
 ft_hastoolbox('spm8up', 1);
