@@ -1,4 +1,4 @@
-function leadfield = myom_leadfield_orig ( headmodel, grid, sens )
+function leadfield = myom_leadfield ( headmodel, grid, sens )
 
 % Based on FiedTrip functions:
 % * ft_leadfield_openmeeg by Daniel D.E. Wong, Sarang S. Dalal
@@ -7,7 +7,7 @@ function leadfield = myom_leadfield_orig ( headmodel, grid, sens )
 % * openmeeg_dsm by Alexandre Gramfort
 % * openmeeg_megm by Emmanuel Olivi
 
-global my_silent;
+global my_silent; %#ok<GVMIS>
 my_silent = ~isempty ( my_silent ) && my_silent;
 
 
@@ -29,7 +29,7 @@ basename  = tempname;
 ismeg = isfield ( sens, 'coilpos' ) &&  isfield ( sens, 'coilori' );
 iseeg = isfield ( sens, 'elecpos' );
 
-% Gets sure that the sensors are correctly identified.
+% Makes sure that the sensors are correctly identified.
 if ~xor ( ismeg, iseeg ), error ( 'The sensor type could not be identified as EEG or MEG. Aborting.\n' ); end
 
 
@@ -56,18 +56,11 @@ if ~isfield ( headmodel, 'dsm' ) && ~isfield ( headmodel, 'hm_dsm' )
 end
 
 % If no hm\dsm matrix, calculates it.
-if ~isfield ( headmodel, 'hm_dsm' ) && ~isfield ( headmodel, 'h2em_hm' )
+if ~isfield ( headmodel, 'hm_dsm' )
     
     if ~my_silent, fprintf ( 1, 'Source matrix not present in the data. Calculating it.\n' ); end
     
-    % Expands the symmetric matrix for the head model, if required.
-    if isstruct ( headmodel.hm )
-        hm = myom_struct2sym ( headmodel.hm );
-    else
-        hm = headmodel.hm;
-    end
-    
-    headmodel.hm_dsm = hm \ headmodel.dsm;
+    headmodel.hm_dsm = headmodel.hm \ headmodel.dsm;
     
     % Deletes the head model and sources matrices to save memory.
     headmodel = rmfield ( headmodel, { 'hm' 'dsm' } );
@@ -98,9 +91,9 @@ if ismeg
     
     % Calculates the dipoles to MEG matrix.
     if ~my_silent
-        status = system ( sprintf ( 'om_assemble -ds2mm "%s.dip" "%s_sens.txt" "%s_s2mm.mat"\n', basename, basename, basename ) );
+        status = system ( sprintf ( 'om_assemble -ds2mm "%s_dip.bin" "%s_sens.txt" "%s_s2mm.mat"\n', basename, basename, basename ) );
     else
-        [ status, output ] = system ( sprintf ( 'om_assemble -ds2mm "%s.dip" "%s_sens.txt" "%s_s2mm.mat"\n', basename, basename, basename ) );
+        [ status, output ] = system ( sprintf ( 'om_assemble -ds2mm "%s_dip.bin" "%s_sens.txt" "%s_s2mm.mat"\n', basename, basename, basename ) );
     end
     
     % Checks for the completion of the execution.
@@ -142,7 +135,7 @@ if ismeg
 end
 
 if iseeg
-    %{
+    
     % Calculates the head surface to EEG matrix.
     if ~my_silent
         status = system ( sprintf ( 'om_assemble -h2em "%s.geom" "%s.cond" "%s_sens.txt" "%s_h2em.mat"\n', basename, basename, basename, basename ) );
@@ -167,20 +160,7 @@ if iseeg
     if ~my_silent, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
     
     % Calculates the leadfield.
-    leadfield      = headmodel.h2em * double ( headmodel.hm_dsm );
-    %}
-    
-    if ~my_silent, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
-    
-    % Estimates the head-to-electrodes mapping.
-    headmodel.h2em = myom_head2elec ( headmodel, sens );
-    
-    
-    % Trims the head model to include only the scalp.
-    hm_trimmed     = myom_trimmat ( headmodel );
-    
-    % Calculates the leadfield.
-    leadfield      = hm_trimmed.th2em * double ( hm_trimmed.thm_dsm );
+    leadfield = headmodel.h2em * double ( headmodel.hm_dsm );
 end
 
 % Removes all the temporal files.
