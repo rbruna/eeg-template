@@ -65,6 +65,8 @@ headmodel.dsm = importdata ( sprintf ( '%s_dsm.mat', basename ) );
 delete ( sprintf ( '%s*', basename ) );
 
 
+% Commented to allow dipole fitting.
+% 
 % % If the headmodel matrix is present calculates hm_dsm.
 % if isfield ( headmodel, 'hm' )
 % 
