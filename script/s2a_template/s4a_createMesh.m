@@ -99,15 +99,19 @@ for file = 1: numel ( files )
                 % Converts the MRI to AC-PC coordinates.
                 dummy.transform    = mridata.transform.vox2acpc;
                 dummy.coordsys     = 'acpc';
-
-                % Gets the MRI volume range.
-                edge1              = dummy.transform * [ 1 1 1 1 ]';
-                edge2              = dummy.transform * cat ( 2, dummy.dim, 1 )';
-                range              = cat ( 2, edge1, edge2 );
-                range              = sort ( range, 2 );
+                
+                % Converts the MRI to millimeters, if required.
+                dummy              = ft_convert_units ( dummy, 'mm' );
+                
+                % Gets the bounding box (corners) of the MRI.
+                bbox               = mymri_bbox ( dummy );
+                
+                % Gets the spatial span of the MRI volume.
+                range              = cat ( 1, min ( bbox ), max ( bbox ) )';
                 
                 % Re-slices the MRI to 1x1x1 mm.
                 cfg.feedback       = 'none';
+                cfg.resolution     = 1;
                 cfg.xrange         = range ( 1, : );
                 cfg.yrange         = range ( 2, : );
                 cfg.zrange         = range ( 3, : );
@@ -130,7 +134,7 @@ for file = 1: numel ( files )
         
         
         fprintf ( 1, '  Sanitizing the anatomical masks.\n' );
-
+        
         % Padds the volumes with zeros.
         dummy.brain        = mymop_addpad3 ( dummy.brain, 10 );
         dummy.skull        = mymop_addpad3 ( dummy.skull, 10 );
