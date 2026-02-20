@@ -84,12 +84,15 @@ for file = 1: numel ( files )
     dummy.skull        = mri.mask ( :, :, :, skullpos );
     dummy.scalp        = mri.mask ( :, :, :, scalppos );
     
+    % Converts the MRI to millimeters, if required.
+    dummy              = ft_convert_units ( dummy, 'mm' );
+    
     
     % Sanitizes the binary masks, if required.
     if config.sanitize
         
         % Checks whether the voxels are square.
-        if abs ( det ( mri.transform ) ) - 1 > 1e-3 && any ( sum ( mri.transform ( 1: 3, 1: 3 ) .^ 2 ) - 1 > 1e-3 )
+        if abs ( det ( dummy.transform ) ) - 1 > 1e-3 && any ( sum ( dummy.transform ( 1: 3, 1: 3 ) .^ 2 ) - 1 > 1e-3 )
             
             % Reslices the MRI to isotropic 1mm3 voxels, if requested.
             if config.reslice
