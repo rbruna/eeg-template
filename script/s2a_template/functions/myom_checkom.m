@@ -3,7 +3,7 @@ function varargout = myom_checkom ( desired )
 % Checks whether OpenMEEG is installed, and the version is correct.
 
 
-% Checks that OpenMEEG is isntalled and the binaries are valid.
+% Checks that OpenMEEG is installed and the binaries are valid.
 myom_init
 
 
