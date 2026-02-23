@@ -305,9 +305,23 @@ if ~isfield ( handles.data.mriinfo, 'mrifile' ) || isempty ( handles.data.mriinf
     return
 end
 
+% If the file is not found, launches a message and returns.
+if ~exist ( handles.data.mriinfo.mrifile, 'file' )
+    errordlg ( 'The previously selected file cannot be found.', 'Error', 'Modal' );
+    uiwait ( findall ( 0, 'Name', 'Error' ) )
+    return
+end
+
+% Gets the current MRI information.
+mriinfo              = handles.data.mriinfo;
+
 % Gets the the scalp surface and the MRI fiducials, if defined.
-% mridata              = load ( handles.data.mriinfo.mrifile, 'subject', 'mri', 'landmark', 'scalp' );
-mridata              = load ( handles.data.mriinfo.mrifile, 'subject', 'landmark', 'transform', 'scalp' );
+mridata              = load ( mriinfo.mrifile, 'subject', 'landmark', 'transform', 'scalp' );
+
+% Updates the MRI information with the MRI, units, if required.
+if ~isfield ( mriinfo, 'unit' )
+    mriinfo.unit         = mridata.transform.unit;
+end
 
 % Sanitizes the scalp definition, if required.
 if isfield ( mridata.scalp, 'pnt' )
@@ -315,14 +329,13 @@ if isfield ( mridata.scalp, 'pnt' )
     mridata.scalp     = rmfield ( tmridata.scalp, 'pnt' );
 end
 
-% Stores the MRI information in the figure data.
-% handles.data         = rmfield ( handles.data, intersect ( fieldnames ( handles.data ), { 'mri' 'landmark' 'scalp' } ) );
+% Stores the updated MRI information in the figure data.
 handles.data         = rmfield ( handles.data, intersect ( fieldnames ( handles.data ), { 'landmark' 'scalp' } ) );
 handles.data.scalp   = ft_convert_units ( mridata.scalp, 'mm' );
+handles.data.mriinfo = mriinfo;
 
 % Stores the Neuromag fiducials in millimeters.
 if isfield ( mridata, 'landmark' ) && isstruct ( mridata.landmark )
-%     handles.data.landmark = ft_transform_geometry ( mridata.mri.transform, mridata.landmark.nm );
     handles.data.landmark = ft_transform_geometry ( mridata.transform.vox2nat, mridata.landmark.nm );
 end
 
