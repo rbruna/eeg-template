@@ -141,14 +141,7 @@ for findex = 1: numel ( files )
     headshape.fid      = elec.fid;
 
     % Greates a dummy gradiometer structure.
-    grad               = [];
-    grad.label         = {};
-    grad.chanpos       = zeros ( 0, 3 );
-    grad.chanori       = zeros ( 0, 3 );
-    grad.coilpos       = zeros ( 0, 3 );
-    grad.coilori       = zeros ( 0, 3 );
-    grad.tra           = zeros ( 0, 0 );
-    grad.unit          = 'm';
+    grad               = my_mkdum ( 'grad' );
 
     
     % Prepares the output.
