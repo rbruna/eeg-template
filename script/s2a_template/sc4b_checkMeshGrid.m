@@ -2,7 +2,7 @@ clc
 clear
 close all
 
-% Sets the path.
+% Defines the location of the files.
 config.path.head = '../../template/headmodel/';
 config.path.figs = '../../figs-template/headmodel/';
 config.path.patt = '*.mat';
@@ -47,45 +47,24 @@ for findex = 1: numel ( files )
     % Loads the MRI data and extracts the masks.
     headdata      = load ( sprintf ( '%s%s', config.path.head, files ( findex ).name ), 'subject', 'mri', 'mesh', 'grid' );
     
-    % If BEM checks the surfaces.
+    
+    % If BEM, checks the geometry using OpenMEEG.
     if numel ( headdata.mesh.bnd ) == 3
-        
-        % Generates a temporal name prefix.
-        tmpprefix     = tempname;
-        
-        % Re-orients the mesh according to OpenMEEG definition.
-        mesh          = myom_check_headmodel ( headdata.mesh );
-        
-        % Checks the triangle files and the geometry file.
-        % Will find intersections and self-intersections.
-        om_save_tri ( sprintf ( '%s_brain.tri', tmpprefix ), mesh.bnd (1).pos, mesh.bnd (1).tri );
-        om_save_tri ( sprintf ( '%s_skull.tri', tmpprefix ), mesh.bnd (2).pos, mesh.bnd (2).tri );
-        om_save_tri ( sprintf ( '%s_scalp.tri', tmpprefix ), mesh.bnd (3).pos, mesh.bnd (3).tri );
-        om_write_geom ( sprintf ( '%s_geom.geom', tmpprefix ), { 'brain.tri', 'skull.tri', 'scalp.tri' } );
-        
-%         system ( sprintf ( 'om_mesh_info -i "%s_brain.tri"', tmpprefix ) );
-%         system ( sprintf ( 'om_mesh_info -i "%s_skull.tri"', tmpprefix ) );
-%         system ( sprintf ( 'om_mesh_info -i "%s_scalp.tri"', tmpprefix ) );
-        system ( sprintf ( 'om_check_geom -g "%s_geom.geom"', tmpprefix ) );
-        
-        % Deletes the files.
-        delete ( sprintf ( '%s_*', tmpprefix ) );
-        
-        % Checks that the meshes are closed.
-        % A closed mesh has an Euler characteristic of 2.
-        fprintf ( 1, 'Subject %s.\n', headdata.subject );
-        fprintf ( 1, 'The Euler characteristic of the first mesh is %i.\n',  mesheuler ( headdata.mesh.bnd (1).tri ) );
-        fprintf ( 1, 'The Euler characteristic of the second mesh is %i.\n', mesheuler ( headdata.mesh.bnd (2).tri ) );
-        fprintf ( 1, 'The Euler characteristic of the third mesh is %i.\n',  mesheuler ( headdata.mesh.bnd (3).tri ) );
-        fprintf ( 1, '\n' );
+        if myom_check_geometry ( headdata.mesh )
+            fprintf ( 1, '  Surface meshes OK according to OpenMEEG.\n' );
+        else
+            fprintf ( 1, '  Surface meshes with errors according to OpenMEEG.\n' );
+            fprintf ( 1, '  Press a key to continue.\n' );
+            pause
+        end
     end
     
     
     % Converts the meshes and the grid to millimeters.
-    grid          = headdata.grid;
-    grid          = ft_convert_units ( grid, 'mm' );
     mesh          = headdata.mesh;
     mesh          = ft_convert_units ( mesh, 'mm' );
+    grid          = headdata.grid;
+    grid          = ft_convert_units ( grid, 'mm' );
     
     
     % Plots the MRI, if requested.
@@ -97,6 +76,7 @@ for findex = 1: numel ( files )
         mri.anatomy   = headdata.mri.anatomy;
         mri.transform = headdata.mri.transform;
         mri.unit      = headdata.mri.unit;
+        mri.coordsys  = 'ras';
         mri           = ft_convert_units ( mri, 'mm' );
         
         ft_determine_coordsys ( mri, 'interactive', 'no' );
@@ -108,10 +88,10 @@ for findex = 1: numel ( files )
     dipoler  = grid.inside & grid.posori ( :, 1 ) >= 0 & dipoleu;
     dipolel  = grid.inside & grid.posori ( :, 1 ) <  0 & dipoleu;
     
-    % Plots the grid.
-    ft_plot_mesh  ( grid.pos ( dipoled, : ), 'vertexcolor', [ 0 0 1 ] );
-    ft_plot_mesh  ( grid.pos ( dipoleu & dipolel, : ), 'vertexcolor', [ 1 0 0 ] );
-    ft_plot_mesh  ( grid.pos ( dipoleu & dipoler, : ), 'vertexcolor', [ 0 1 0 ] );
+    % Plots the source model.
+    ft_plot_mesh  ( grid.pos ( dipoled, : ), 'VertexColor', [ 0.0000 0.4470 0.7410 ], 'VertexSize', 5 );
+    ft_plot_mesh  ( grid.pos ( dipolel, : ), 'VertexColor', [ 0.8500 0.3250 0.0980 ], 'VertexSize', 5 );
+    ft_plot_mesh  ( grid.pos ( dipoler, : ), 'VertexColor', [ 0.4660 0.6740 0.1880 ], 'VertexSize', 5 );
     
     % Plots the meshes.
     for mindex = 1: numel ( mesh.tissue )
@@ -122,21 +102,22 @@ for findex = 1: numel ( files )
             otherwise,    meshcolor = [ 1 1 1 ] - eps;
         end
         
-        ft_plot_mesh  ( mesh.bnd ( mindex ), 'facecolor', meshcolor, 'edgecolor', 'none', 'facealpha', .5 );
+        ft_plot_mesh  ( mesh.bnd ( mindex ), 'facecolor', meshcolor, 'edgecolor', 'none', 'facealpha', .3 );
     end
     
     % Lights the scene.
     set ( gcf, 'Name', headdata.subject );
     delete ( findall ( gcf, 'Type', 'light' ) )
-    view ( [   90,   0 ] ), camlight
-    view ( [ -150,   0 ] ), camlight
+    view ( [ -140,   0 ] ), camlight
     lighting gouraud
+    material dull
     rotate3d
+    drawnow
     
-    clc
-    fprintf ( 1, 'Blue:  Bottom.\n' );
-    fprintf ( 1, 'Red:   Top left.\n' );
-    fprintf ( 1, 'Green: Top right.\n' );
+    fprintf ( 1, '  Showing sources by color:\n' );
+    fprintf ( 1, '    Blue:  Bottom.\n' );
+    fprintf ( 1, '    Red:   Top left.\n' );
+    fprintf ( 1, '    Green: Top right.\n' );
     
     
     % Saves the figure.
@@ -148,7 +129,4 @@ for findex = 1: numel ( files )
         my_savegif ( sprintf ( '%s%s.gif', config.path.figs, headdata.subject ) )
     end
     close all
-    clc
-    
-    pause (2)
 end

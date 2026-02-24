@@ -3,13 +3,13 @@ clear
 close all
 
 % Sets the path.
-config.path.sens     = '../../template/sens/';
-config.path.figs     = '../../figs-template/transform_/';
-config.path.patt     = '*.mat';
+config.path.tran = '../../template/sens/';
+config.path.figs = '../../figs-template/transform_/';
+config.path.patt = '*.mat';
 
 % Selects which versions of the figure to save.
-config.savefig       = false;
-config.savegif       = true;
+config.savefig   = false;
+config.savegif   = true;
 
 
 % Adds the functions folders to the path.
@@ -29,86 +29,79 @@ ft_hastoolbox ( 'openmeeg', 1, 1 );
 if ~exist ( config.path.figs, 'dir' ), mkdir ( config.path.figs ); end
 
 % Gets the files list.
-files = dir ( sprintf ( '%s%s', config.path.sens, config.path.patt ) );
+files = dir ( sprintf ( '%s%s', config.path.tran, config.path.patt ) );
 
 % Goes through all the files.
 for findex = 1: numel ( files )
     
-    % Clears the command window.
-    clc
+    % Loads the transformation information.
+    traninfo  = load ( sprintf ( '%s%s', config.path.tran, files ( findex ).name ) );
     
-    % Loads the MRI data and extracts the masks.
-    sensdata      = load ( sprintf ( '%s%s', config.path.sens, files ( findex ).name ) );
+    % If no MRI information, skips the file.
+    if ~isfield ( traninfo, 'mriinfo' ) || ~isfield ( traninfo.mriinfo, 'mrifile' )
+        fprintf ( 1, 'Skipping subject ''%s'' (no head model defined).\n', traninfo.subject );
+        continue
+    end
     
-
-    % Loads the MRI-based headmodel and grid.
-    headdata      = load ( sensdata.mriinfo.mrifile, 'mesh', 'grid', 'headmodel' );
+    fprintf ( 1, 'Working with subject ''%s''.\n', traninfo.subject );
     
-    % The sources are oriented with the axis of the MRI coordinate system.
-    headdata.grid.ori  = eye (3);
+    % Loads the head and source models.
+    headdata  = load ( traninfo.mriinfo.mrifile, 'mesh', 'grid' );
     
-    % Transforms the headmodel and the grid to MEG coordinates.
-    headdata.mesh      = ft_convert_units ( headdata.mesh,      sensdata.mriinfo.unit );
-    headdata.headmodel = ft_convert_units ( headdata.headmodel, sensdata.mriinfo.unit );
-    headdata.grid      = ft_convert_units ( headdata.grid,      sensdata.mriinfo.unit );
     
-    headdata.mesh      = ft_transform_geometry ( sensdata.mriinfo.transform, headdata.mesh );
-    headdata.headmodel = ft_transform_geometry ( sensdata.mriinfo.transform, headdata.headmodel );
-    headdata.grid      = ft_transform_geometry ( sensdata.mriinfo.transform, headdata.grid );
-    
-    % Transforms the head model and source model to SI units (meters).
-    headdata.mesh      = ft_convert_units ( headdata.mesh,      'm' );
-    headdata.headmodel = ft_convert_units ( headdata.headmodel, 'm' );
-    headdata.grid      = ft_convert_units ( headdata.grid,      'm' );
-    
-
-    % If BEM checks the surfaces.
+    % If BEM, checks the geometry using OpenMEEG.
     if numel ( headdata.mesh.bnd ) == 3
-        
-        % Generates a temporal name prefix.
-        tmpprefix = tempname;
-        
-        % Checks the triangle files and the geometry file.
-        % Will find intersections and self-intersections.
-        om_save_tri ( sprintf ( '%s_brain.tri', tmpprefix ), headdata.mesh.bnd (1).pos, headdata.mesh.bnd (1).tri );
-        om_save_tri ( sprintf ( '%s_skull.tri', tmpprefix ), headdata.mesh.bnd (2).pos, headdata.mesh.bnd (2).tri );
-        om_save_tri ( sprintf ( '%s_scalp.tri', tmpprefix ), headdata.mesh.bnd (3).pos, headdata.mesh.bnd (3).tri );
-        om_write_geom ( sprintf ( '%s_geom.geom', tmpprefix ), { sprintf( '%s_brain.tri', tmpprefix ), sprintf( '%s_skull.tri', tmpprefix ), sprintf( '%s_scalp.tri', tmpprefix ) } );
-        
-%         system ( sprintf ( 'om_mesh_info -i "%s_brain.tri"', tmpprefix ) );
-%         system ( sprintf ( 'om_mesh_info -i "%s_skull.tri"', tmpprefix ) );
-%         system ( sprintf ( 'om_mesh_info -i "%s_scalp.tri"', tmpprefix ) );
-        system ( sprintf ( 'om_check_geom -g "%s_geom.geom"', tmpprefix ) );
-        
-        % Deletes the files.
-        delete ( sprintf ( '%s_*', tmpprefix ) );
-        
-        % Checks that the meshes are closed.
-        % A closed mesh has an Euler characteristic of 2.
-        fprintf ( 1, 'Subject %s.\n', sensdata.subject );
-        fprintf ( 1, 'The Euler characteristic of the first mesh is %i.\n',  mesheuler ( headdata.mesh.bnd (1).tri ) );
-        fprintf ( 1, 'The Euler characteristic of the second mesh is %i.\n', mesheuler ( headdata.mesh.bnd (2).tri ) );
-        fprintf ( 1, 'The Euler characteristic of the third mesh is %i.\n',  mesheuler ( headdata.mesh.bnd (3).tri ) );
+        if myom_check_geometry ( headdata.mesh )
+            fprintf ( 1, '  Surface meshes OK according to OpenMEEG.\n' );
+        else
+            fprintf ( 1, '  Surface meshes with errors according to OpenMEEG.\n' );
+            fprintf ( 1, '  Press a key to continue.\n' );
+            pause
+        end
     end
     
     
-    % Gets the mesh(es), the head shape and the source model.
-    grid          = headdata.grid;
-    mesh          = headdata.mesh;
+    % Gets the surface mesh(es) and the source model.
+    mesh      = headdata.mesh;
+    grid      = headdata.grid;
     
-    % Gets the original posiiton of the dipoles.
-    dipoleu  = grid.inside & grid.posori ( :, 3 ) >= 0;
-    dipoled  = grid.inside & grid.posori ( :, 3 ) <  0;
-    dipoler  = grid.inside & grid.posori ( :, 1 ) >= 0 & dipoleu;
-    dipolel  = grid.inside & grid.posori ( :, 1 ) <  0 & dipoleu;
+    % Gets the head shape.
+    headshape = traninfo.headshape;
     
-    % Plots the grid.
+    % Gets the sensor definition(s).
+    elec      = traninfo.elec;
+    grad      = traninfo.grad;
+
+    
+    % Transforms the surface and the source model to head coordinates.
+    mesh      = ft_convert_units ( mesh, traninfo.mriinfo.unit );
+    mesh      = ft_transform_geometry ( traninfo.mriinfo.transform, mesh );
+    
+    grid      = ft_convert_units ( grid, traninfo.mriinfo.unit );
+    grid      = ft_transform_geometry ( traninfo.mriinfo.transform, grid );
+    
+    
+    % Converts all the data into SI units (meters).
+    mesh      = ft_convert_units ( mesh, 'm' );
+    grid      = ft_convert_units ( grid, 'm' );
+    headshape = ft_convert_units ( headshape, 'm' );
+    grad      = ft_convert_units ( grad, 'm' );
+    elec      = ft_convert_units ( elec, 'm' );
+    
+    
+    % Gets the original position of the dipoles.
+    dipoleu   = grid.inside & grid.posori ( :, 3 ) >= 0;
+    dipoled   = grid.inside & grid.posori ( :, 3 ) <  0;
+    dipoler   = grid.inside & grid.posori ( :, 1 ) >= 0 & dipoleu;
+    dipolel   = grid.inside & grid.posori ( :, 1 ) <  0 & dipoleu;
+    
+    % Plots the sources model.
     ft_plot_mesh  ( grid.pos ( dipoled, : ), 'VertexColor', [ 0.0000 0.4470 0.7410 ], 'VertexSize', 5 );
-    ft_plot_mesh  ( grid.pos ( dipolel, : ), 'VertexColor', [ 0.4660 0.6740 0.1880 ], 'VertexSize', 5 );
-    ft_plot_mesh  ( grid.pos ( dipoler, : ), 'VertexColor', [ 0.3010 0.7450 0.9330 ], 'VertexSize', 5 );
-    % ft_plot_mesh  ( grid.pos ( grid.inside, : ), 'VertexColor', [ 0 0 0 ], 'VertexSize', 1 );
+    ft_plot_mesh  ( grid.pos ( dipolel, : ), 'VertexColor', [ 0.8500 0.3250 0.0980 ], 'VertexSize', 5 );
+    ft_plot_mesh  ( grid.pos ( dipoler, : ), 'VertexColor', [ 0.4660 0.6740 0.1880 ], 'VertexSize', 5 );
     
-    % Plots the meshes.
+    
+    % Plots the surface mesh(es).
     for mindex = 1: numel ( mesh.tissue )
         switch mesh.tissue { mindex }
             case 'brain', meshcolor = 'brain';
@@ -117,42 +110,58 @@ for findex = 1: numel ( files )
             otherwise,    meshcolor = [ 1 1 1 ] - eps;
         end
         
-        ft_plot_mesh  ( mesh.bnd ( mindex ), 'facecolor', meshcolor, 'edgecolor', 'none', 'facealpha', .2 );
+        ft_plot_mesh  ( mesh.bnd ( mindex ), 'facecolor', meshcolor, 'edgecolor', 'none', 'facealpha', .3 );
     end
-    hold on
+    
+    
+    % Sanitizes the head shape.
+    if ~isfield ( headshape, 'pos' ) && isfield ( headshape, 'pnt' )
+        headshape.pos = headshape.pnt;
+    end
+    if isfield ( headshape, 'fid' ) && ~isfield ( headshape.fid, 'pos' ) && isfield ( headshape.fid, 'pnt' )
+        headshape.fid.pos = headshape.fid.pnt;
+    end
+    
+    % Gets the head shape points, the fiducials and the HPI coils.
+    hpiindex  = strncmp ( headshape.label, 'hpi_', 4 );
+    hpipos    = headshape.pos (  hpiindex, : );
+    hspos     = headshape.pos ( ~hpiindex, : );
+    fidpos    = headshape.fid.pos;
+    
+    % Plots the head shape.
+    ft_plot_mesh ( hspos, 'VertexColor', [ 0 0 1 ], 'VertexSize', 5 );
+    ft_plot_mesh ( fidpos, 'VertexColor', [ 0 0 0 ], 'VertexSize', 20 );
+    ft_plot_mesh ( hpipos, 'VertexColor', [ 1 0 0 ], 'VertexSize', 20 );
     
     
     % Plots the sensors.
-    if isfield ( sensdata, 'grad' ) && ~isempty ( sensdata.grad )
-        plot3 ( sensdata.grad.chanpos ( :, 1 ), sensdata.grad.chanpos ( :, 2 ), sensdata.grad.chanpos ( :, 3 ), '+r' )
-    end
-    if isfield ( sensdata, 'elec' ) && ~isempty ( sensdata.elec )
-        plot3 ( sensdata.elec.chanpos ( :, 1 ), sensdata.elec.chanpos ( :, 2 ), sensdata.elec.chanpos ( :, 3 ), '*r' )
-    end
-    if isfield ( sensdata, 'sens' ) && ~isempty ( sensdata.sens )
-        plot3 ( sensdata.sens.chanpos ( :, 1 ), sensdata.sens.chanpos ( :, 2 ), sensdata.sens.chanpos ( :, 3 ), 'or' )
-    end
+    ft_plot_mesh ( grad.chanpos, 'VertexColor', [ 0.6350 0.0780 0.1840 ], 'VertexMarker', 'o', 'VertexSize', 5 );
+    ft_plot_mesh ( elec.chanpos, 'VertexColor', [ 0.6350 0.0780 0.1840 ], 'VertexMarker', '*', 'VertexSize', 5 );
+    ft_plot_mesh ( elec.chanpos, 'VertexColor', [ 0.6350 0.0780 0.1840 ], 'VertexMarker', 'o', 'VertexSize', 5 );
     
+
     % Lights the scene.
-    set ( gcf, 'Name', sensdata.subject );
-    view ( [   90,   0 ] ), camlight
-    view ( [ -150,   0 ] ), camlight
-    material dull
+    set ( gcf, 'Name', traninfo.subject );
+    view ( [ -140,   0 ] ), camlight
     lighting gouraud
+    material dull
+    rotate3d
     drawnow
     
-    fprintf ( 1, 'Blue:  Bottom.\n' );
-    fprintf ( 1, 'Green: Top left.\n' );
-    fprintf ( 1, 'Cyan:  Top right.\n' );
+    fprintf ( 1, '  Showing sources by color:\n' );
+    fprintf ( 1, '    Blue:  Bottom.\n' );
+    fprintf ( 1, '    Red:   Top left.\n' );
+    fprintf ( 1, '    Green: Top right.\n' );
+    
     
     % Saves the figure.
-    print ( '-dpng', sprintf ( '%s%s.png', config.path.figs, sensdata.subject ) )
+    print ( '-dpng', sprintf ( '%s%s.png', config.path.figs, traninfo.subject ) )
     
     if config.savefig
-        savefig ( sprintf ( '%s%s.fig', config.path.figs, sensdata.subject ) )
+        savefig ( sprintf ( '%s%s.fig', config.path.figs, traninfo.subject ) )
     end
     if config.savegif
-        my_savegif ( sprintf ( '%s%s.gif', config.path.figs, sensdata.subject ) )
+        my_savegif ( sprintf ( '%s%s.gif', config.path.figs, traninfo.subject ) )
     end
     
     close all
