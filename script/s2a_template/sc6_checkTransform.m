@@ -4,7 +4,7 @@ close all
 
 % Sets the path.
 config.path.tran = '../../template/sens/';
-config.path.figs = '../../figs-template/transform_/';
+config.path.figs = '../../figs-template/transform/';
 config.path.patt = '*.mat';
 
 % Selects which versions of the figure to save.
