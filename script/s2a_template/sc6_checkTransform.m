@@ -45,7 +45,7 @@ for findex = 1: numel ( files )
     
     fprintf ( 1, 'Working with subject ''%s''.\n', traninfo.subject );
     
-    % Loads the head and source models.
+    % Loads the head and sources models.
     headdata  = load ( traninfo.mriinfo.mrifile, 'mesh', 'grid' );
     
     
@@ -61,7 +61,7 @@ for findex = 1: numel ( files )
     end
     
     
-    % Gets the surface mesh(es) and the source model.
+    % Gets the surface mesh(es) and the sources model.
     mesh      = headdata.mesh;
     grid      = headdata.grid;
     
@@ -73,7 +73,7 @@ for findex = 1: numel ( files )
     grad      = traninfo.grad;
     
     
-    % Transforms the surface and the source model to head coordinates.
+    % Transforms the surface and the sources model to head coordinates.
     mesh      = ft_convert_units ( mesh, traninfo.mriinfo.unit );
     mesh      = ft_transform_geometry ( traninfo.mriinfo.transform, mesh );
     
