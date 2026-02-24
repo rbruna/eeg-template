@@ -71,7 +71,7 @@ for findex = 1: numel ( files )
     % Gets the sensor definition(s).
     elec      = traninfo.elec;
     grad      = traninfo.grad;
-
+    
     
     % Transforms the surface and the source model to head coordinates.
     mesh      = ft_convert_units ( mesh, traninfo.mriinfo.unit );
@@ -131,7 +131,7 @@ for findex = 1: numel ( files )
     ft_plot_mesh ( elec.chanpos, 'VertexColor', [ 0.6350 0.0780 0.1840 ], 'VertexMarker', '*', 'VertexSize', 5 );
     ft_plot_mesh ( elec.chanpos, 'VertexColor', [ 0.6350 0.0780 0.1840 ], 'VertexMarker', 'o', 'VertexSize', 5 );
     
-
+    
     % Lights the scene.
     set ( gcf, 'Name', traninfo.subject );
     view ( [ -140,   0 ] ), camlight
