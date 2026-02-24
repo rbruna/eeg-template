@@ -167,10 +167,16 @@ transdata = load ( transfile );
 if isfield ( transdata.headshape, 'pnt' )
     transdata.headshape.pos = transdata.headshape.pnt;
     transdata.headshape     = rmfield ( transdata.headshape, 'pnt' );
+    save ( '-v6', transfile, '-struct', 'transdata' );
+    warndlg ( 'Head shape definition updated.', 'Warning', 'Modal' );
+    uiwait ( findall ( 0, 'Name', 'Warning' ) )
 end
 if isfield ( transdata.headshape.fid, 'pnt' )
     transdata.headshape.fid.pos = transdata.headshape.fid.pnt;
     transdata.headshape.fid     = rmfield ( transdata.headshape.fid, 'pnt' );
+    save ( '-v6', transfile, '-struct', 'transdata' );
+    warndlg ( 'Head shape fiducials updated.', 'Warning', 'Modal' );
+    uiwait ( findall ( 0, 'Name', 'Warning' ) )
 end
 
 
