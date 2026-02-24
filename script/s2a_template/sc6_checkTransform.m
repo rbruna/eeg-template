@@ -114,14 +114,6 @@ for findex = 1: numel ( files )
     end
     
     
-    % Sanitizes the head shape.
-    if ~isfield ( headshape, 'pos' ) && isfield ( headshape, 'pnt' )
-        headshape.pos = headshape.pnt;
-    end
-    if isfield ( headshape, 'fid' ) && ~isfield ( headshape.fid, 'pos' ) && isfield ( headshape.fid, 'pnt' )
-        headshape.fid.pos = headshape.fid.pnt;
-    end
-    
     % Gets the head shape points, the fiducials and the HPI coils.
     hpiindex  = strncmp ( headshape.label, 'hpi_', 4 );
     hpipos    = headshape.pos (  hpiindex, : );
