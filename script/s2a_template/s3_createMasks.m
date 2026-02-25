@@ -6,8 +6,8 @@ close all
 config.path.mri  = '../../template/anatomy/';
 config.path.patt = '*.mat';
 
-% Action when the task has already been processed.
-config.overwrite = true;
+% Action when the anatomy has already been processed.
+config.overwrite = false;
 
 
 % Adds the functions folders to the path.
@@ -25,17 +25,17 @@ ft_hastoolbox ( 'spm8', 1, 1 );
 files = dir ( sprintf ( '%s%s', config.path.mri, config.path.patt ) );
 
 % Goes through all the files.
-for file = 1: numel ( files )
+for findex = 1: numel ( files )
     
     % Pre-loads the MRI.
-    mridata         = load ( sprintf ( '%s%s', config.path.mri, files ( file ).name ), 'subject', 'transform' );
+    mridata       = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'transform' );
     
     if ~isfield ( mridata.transform, 'mni2nat' )
         fprintf ( 1, 'Ignoring subject %s (No yet segmented).\n', mridata.subject );
         continue
     end
     
-    fileinfo           = whos ( '-file', sprintf ( '%s%s', config.path.mri, files ( file ).name ) );
+    fileinfo      = whos ( '-file', sprintf ( '%s%s', config.path.mri, files ( findex ).name ) );
     if ismember ( 'mesh', { fileinfo.name } ) && ~config.overwrite
         fprintf ( 1, 'Ignoring subject %s. (Surfaces already generated)\n', mridata.subject );
         continue
@@ -45,11 +45,11 @@ for file = 1: numel ( files )
     fprintf ( 1, 'Working on subject %s.\n', mridata.subject );
     
     % Loads the MRI.
-    mridata         = load ( sprintf ( '%s%s', config.path.mri, files ( file ).name ), 'subject', 'mri', 'landmark', 'transform' );
-    mri             = mridata.mri;
+    mridata       = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'mri', 'landmark', 'transform' );
+    mri           = mridata.mri;
     
     % Unpacks the MRI.
-    mri             = my_unpackmri ( mri );
+    mri           = my_unpackmri ( mri );
     
     
     % Creates the SPM/FT masks.
@@ -57,7 +57,7 @@ for file = 1: numel ( files )
     
     % Initializes the mask fields, if required.
     if ~isfield ( mri, 'masklabel' )
-        mri.masklabel   = {};
+        mri.masklabel = {};
     end
     
     % Generates the scalp mask using SPM.
@@ -67,8 +67,8 @@ for file = 1: numel ( files )
         fprintf ( 1, '    Generating ''scalp'' mask.\n' );
         
         % Gets the position of the mask or adds it.
-        mri.masklabel   = unique ( cat ( 1, mri.masklabel, 'Scalp' ), 'stable' );
-        maskpos         = find ( strcmpi ( mri.masklabel, 'Scalp' ) );
+        mri.masklabel = unique ( cat ( 1, mri.masklabel, 'Scalp' ), 'stable' );
+        maskpos       = find ( strcmpi ( mri.masklabel, 'Scalp' ) );
         
         % Generates the mask and stores it.
         mri.mask ( :, :, :, maskpos ) = my_getScalp ( mri );
@@ -82,8 +82,8 @@ for file = 1: numel ( files )
             fprintf ( 1, '    Generating ''brain'' mask from the SPM segmentation.\n' );
             
             % Gets the position of the mask or adds it.
-            mri.masklabel   = unique ( cat ( 1, mri.masklabel, 'Brain SPM' ), 'stable' );
-            maskpos         = find ( strcmpi ( mri.masklabel, 'Brain SPM' ) );
+            mri.masklabel = unique ( cat ( 1, mri.masklabel, 'Brain SPM' ), 'stable' );
+            maskpos       = find ( strcmpi ( mri.masklabel, 'Brain SPM' ) );
             
             % Generates the mask and stores it.
             mri.mask ( :, :, :, maskpos ) = my_getBrainSPM ( mri );
@@ -98,8 +98,8 @@ for file = 1: numel ( files )
             fprintf ( 1, '    Generating ''skull'' mask from the SPM segmentation.\n' );
             
             % Gets the position of the mask or adds it.
-            mri.masklabel   = unique ( cat ( 1, mri.masklabel, 'Skull SPM' ), 'stable' );
-            maskpos         = find ( strcmpi ( mri.masklabel, 'Skull SPM' ) );
+            mri.masklabel = unique ( cat ( 1, mri.masklabel, 'Skull SPM' ), 'stable' );
+            maskpos       = find ( strcmpi ( mri.masklabel, 'Skull SPM' ) );
             
             % Generates the mask and stores it.
             mri.mask ( :, :, :, maskpos ) = my_getSkullSPM ( mri );
@@ -114,12 +114,12 @@ for file = 1: numel ( files )
             fprintf ( 1, '    Generating ''brain'' mask using FieldTrip method.\n' );
             
             % Gets the SPM brain mask calculated before.
-            maskpos         = strcmpi ( mri.masklabel, 'Brain SPM' );
-            brainmask       = mri.mask ( :, :, :, maskpos );
+            maskpos       = strcmpi ( mri.masklabel, 'Brain SPM' );
+            brainmask     = mri.mask ( :, :, :, maskpos );
             
             % Gets the position of the mask or adds it.
-            mri.masklabel   = unique ( cat ( 1, mri.masklabel, 'Brain FT' ), 'stable' );
-            maskpos         = find ( strcmpi ( mri.masklabel, 'Brain FT' ) );
+            mri.masklabel = unique ( cat ( 1, mri.masklabel, 'Brain FT' ), 'stable' );
+            maskpos       = find ( strcmpi ( mri.masklabel, 'Brain FT' ) );
             
             % Stores the mask with a new name.
             mri.mask ( :, :, :, maskpos ) = brainmask;
@@ -130,8 +130,8 @@ for file = 1: numel ( files )
             fprintf ( 1, '    Generating ''skull'' mask using FieldTrip method.\n' );
             
             % Gets the position of the mask or adds it.
-            mri.masklabel   = unique ( cat ( 1, mri.masklabel, 'Skull FT' ), 'stable' );
-            maskpos         = find ( strcmpi ( mri.masklabel, 'Skull FT' ) );
+            mri.masklabel = unique ( cat ( 1, mri.masklabel, 'Skull FT' ), 'stable' );
+            maskpos       = find ( strcmpi ( mri.masklabel, 'Skull FT' ) );
             
             % Generates the mask and stores it.
             mri.mask ( :, :, :, maskpos ) = my_getSkullFT ( mri );
@@ -146,8 +146,8 @@ for file = 1: numel ( files )
             fprintf ( 1, '    Generating ''skull'' mask from the pseudo-CT image.\n' );
             
             % Gets the position of the mask or adds it.
-            mri.masklabel   = unique ( cat ( 1, mri.masklabel, 'Skull pseudoCT' ), 'stable' );
-            maskpos         = find ( strcmpi ( mri.masklabel, 'Skull pseudoCT' ) );
+            mri.masklabel = unique ( cat ( 1, mri.masklabel, 'Skull pseudoCT' ), 'stable' );
+            maskpos       = find ( strcmpi ( mri.masklabel, 'Skull pseudoCT' ) );
             
             % Generates the mask and stores it.
             mri.mask ( :, :, :, maskpos ) = my_getSkullpCT ( mri );
@@ -158,8 +158,8 @@ for file = 1: numel ( files )
             fprintf ( 1, '    Generating ''brain'' mask from the pseudo-CT image.\n' );
             
             % Gets the position of the mask or adds it.
-            mri.masklabel   = unique ( cat ( 1, mri.masklabel, 'Brain pseudoCT' ), 'stable' );
-            maskpos         = find ( strcmpi ( mri.masklabel, 'Brain pseudoCT' ) );
+            mri.masklabel = unique ( cat ( 1, mri.masklabel, 'Brain pseudoCT' ), 'stable' );
+            maskpos       = find ( strcmpi ( mri.masklabel, 'Brain pseudoCT' ) );
             
             % Generates the mask and stores it.
             mri.mask ( :, :, :, maskpos ) = my_getBrainpCT ( mri );
@@ -174,8 +174,8 @@ for file = 1: numel ( files )
             fprintf ( 1, '    Generating ''skull'' mask from the CT image.\n' );
             
             % Gets the position of the mask or adds it.
-            mri.masklabel   = unique ( cat ( 1, mri.masklabel, 'Skull CT' ), 'stable' );
-            maskpos         = find ( strcmpi ( mri.masklabel, 'Skull CT' ) );
+            mri.masklabel = unique ( cat ( 1, mri.masklabel, 'Skull CT' ), 'stable' );
+            maskpos       = find ( strcmpi ( mri.masklabel, 'Skull CT' ) );
             
             % Generates the mask and stores it.
             mri.mask ( :, :, :, maskpos ) = my_getSkullCT ( mri );
@@ -186,8 +186,8 @@ for file = 1: numel ( files )
             fprintf ( 1, '    Generating ''brain'' mask from the CT image.\n' );
             
             % Gets the position of the mask or adds it.
-            mri.masklabel   = unique ( cat ( 1, mri.masklabel, 'Brain CT' ), 'stable' );
-            maskpos         = find ( strcmpi ( mri.masklabel, 'Brain CT' ) );
+            mri.masklabel = unique ( cat ( 1, mri.masklabel, 'Brain CT' ), 'stable' );
+            maskpos       = find ( strcmpi ( mri.masklabel, 'Brain CT' ) );
             
             % Generates the mask and stores it.
             mri.mask ( :, :, :, maskpos ) = my_getBrainCT ( mri );
@@ -198,10 +198,10 @@ for file = 1: numel ( files )
     fprintf ( 1, '  Saving the anatomy file.\n' );
     
     % Packs the MRI to save space.
-    mri             = my_packmri ( mri );
+    mri           = my_packmri ( mri );
     
     % Updates the anatomy data.
-    mridata.mri     = mri;
+    mridata.mri   = mri;
     
     % Saves the masks.
     save ( '-v6', sprintf ( '%s%s_3DT1', config.path.mri, mridata.subject ), '-struct', 'mridata' )
