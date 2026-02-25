@@ -54,7 +54,7 @@ for file = 1: numel ( files )
         meshtype          = mridata.mesh.type;
     end
     
-    if exist ( sprintf ( '%s%s_%s_%s.mat', config.path.head, mridata.subject, meshtype, srctemp.subject ), 'file' ) && ~config.overwrite
+    if exist ( sprintf ( '%s%s_%s_%s.mat', config.path.head, mridata.subject, meshtype, srctemp.model ), 'file' ) && ~config.overwrite
         fprintf ( 1, 'Ignoring subject %s (already calculated).\n', mridata.subject );
         continue
     end
