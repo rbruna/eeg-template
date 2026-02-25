@@ -51,7 +51,7 @@ function s6_realignMRI_OpeningFcn ( hObject, eventdata, handles, varargin )
 
 % Defines the files locations.
 config.path.trans = '../../template/sens/';
-config.path.mri   = '../../template/anatomy/';
+config.path.mri   = '../../template/headmodel/';
 config.path.patt  = '*.mat';
 
 
