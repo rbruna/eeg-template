@@ -238,7 +238,7 @@ for file = 1: numel ( files )
     leaddata.elec      = elec;
     leaddata.mesh      = mesh;
     leaddata.grid      = srcmodel;
-    return
+    
     % Saves the lead field.
     save ( '-v6', sprintf ( '%s%s', config.path.lead, traninfo.subject ), '-struct', 'leaddata' );
 end
