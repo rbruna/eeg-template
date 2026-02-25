@@ -7,12 +7,19 @@ config.path.mri  = '../../template/anatomy/';
 config.path.head = '../../template/headmodel/';
 config.path.patt = '*.mat';
 
+% Defines the head model. Can be 'bem3', 'ss' (single shell) or 'auto'.
+config.model     = 'bem3';
+
 % Defines the template grid to use.
 config.sources   = '../../template/grid/MNI-surface.mat';
-% config.sources   = '../../template/grid/CTB-10mm.mat';
+config.sources   = '../../template/grid/CTB-10mm.mat';
 
 % Action when the task have already been processed.
 config.overwrite = false;
+
+
+% Creates the output folder, if required.
+if ~exist ( config.path.head, 'dir' ), mkdir ( config.path.head ); end
 
 
 % Adds the functions folders to the path.
@@ -28,10 +35,6 @@ ft_hastoolbox ( 'openmeeg', 1, 1 );
 ft_hastoolbox ( 'freesurfer', 1, 1 );
 
 
-% Creates the output folder, if required.
-if ~exist ( config.path.head, 'dir' ), mkdir ( config.path.head ); end
-
-
 % Loads the sources template MRI and grid.
 srctemp = load ( config.sources );
 
@@ -43,39 +46,61 @@ files = dir ( sprintf ( '%s%s', config.path.mri, config.path.patt ) );
 for file = 1: numel ( files )
     
     % Pre-loads the anatomy.
-    srcdata           = load ( sprintf ( '%s%s', config.path.mri, files ( file ).name ), 'subject' );
+    mridata           = load ( sprintf ( '%s%s', config.path.mri, files ( file ).name ), 'subject', 'mesh' );
     
-    fileinfo          = whos ( '-file', sprintf ( '%s%s', config.path.mri, files ( file ).name ) );
-    if ismember ( 'grid', { fileinfo.name } ) && ~config.overwrite
-        fprintf ( 1, 'Ignoring subject %s. (Already calculated)\n', srcdata.subject );
+    if strcmp ( config.model, 'ss' )
+        meshtype          = 'singleshell';
+    else
+        meshtype          = mridata.mesh.type;
+    end
+    
+    if exist ( sprintf ( '%s%s_%s_%s.mat', config.path.head, mridata.subject, meshtype, srctemp.subject ), 'file' ) && ~config.overwrite
+        fprintf ( 1, 'Ignoring subject %s (already calculated).\n', mridata.subject );
         continue
     end
     
     
-    fprintf ( 1, 'Working on subject %s.\n', srcdata.subject );
+    fprintf ( 1, 'Working on subject %s.\n', mridata.subject );
     
-    % Loads the MRI data and extracts the masks.
-    srcdata           = load ( sprintf ( '%s%s', config.path.mri, files ( file ).name ), 'subject', 'mri', 'landmark', 'transform', 'mesh', 'scalp' );
-    mri               = srcdata.mri;
-    transform         = srcdata.transform;
-    mesh              = srcdata.mesh;
+    % Loads the anatomy and the surface mesh(es).
+    mridata           = load ( sprintf ( '%s%s', config.path.mri, files ( file ).name ), 'subject', 'mri', 'landmark', 'transform', 'mesh', 'scalp' );
+    mri               = mridata.mri;
+    transform         = mridata.transform;
+    mesh              = mridata.mesh;
     
     % Unpacks the MRI.
     mri               = my_unpackmri ( mri );
     
     
-    fprintf ( 1, '  Transforming MNI grid to subject space.\n' );
+    % Sanitizes the surface meshes.
+    if strcmp ( config.model, 'bem3' ) && ~strncmp ( mesh.type, 'bem', 3 )
+        fprintf ( 1, 'Ignoring subject %s (not valid for three-layer BEM).\n', mridata.subject );
+        continue
+    end
+    
+    % Converts the surface into single-shell, if requested.
+    if strcmp ( config.model, 'ss' ) && ~strcmp ( mesh.type, 'ss' )
+        
+        % Gets only the brain surface mesh.
+        hit               = strcmp ( mesh.tissue, 'brain' );
+        mesh.type         = 'singleshell';
+        mesh.tissue       = mesh.tissue ( hit );
+        mesh.bnd          = mesh.bnd ( hit );
+    end
+    
+    
+    fprintf ( 1, '  Transforming the template (MNI) sources model to subject space.\n' );
     
     % Transforms the MNI grid to subject's native space.
-    srcmodel          = srctemp.grid;
+    srcmodel          = srctemp.sourcemodel;
     srcmodel          = ft_convert_units ( srcmodel, transform.unit );
     srcmodel          = ft_transform_geometry ( transform.mni2nat, srcmodel );
     srcmodel          = ft_convert_units ( srcmodel, 'm' );
     
     % Stores the original source definition.
-    srcmodel.posori  = srctemp.grid.pos;
-    if isfield ( srctemp.grid, 'nrm' )
-        srcmodel.nrmori   = srctemp.grid.nrm;
+    srcmodel.posori  = srctemp.sourcemodel.pos;
+    if isfield ( srctemp.sourcemodel, 'nrm' )
+        srcmodel.nrmori   = srctemp.sourcemodel.nrm;
     end
     
     
@@ -92,7 +117,8 @@ for file = 1: numel ( files )
         % Moves all the sources of the grid inside the brain surface.
         cfg               = [];
         cfg.sourcemodel   = tmpgrid;
-        cfg.headmodel.bnd = mesh.bnd ( strcmp ( mesh.tissue, 'brain' ) );
+        cfg.headmodel     = mesh;
+        cfg.headmodel.type = 'openmeeg';
         cfg.moveinward    = 0.001;
         cfg.inwardshift   = 0;
         
@@ -103,12 +129,20 @@ for file = 1: numel ( files )
     end
     
     
-    fprintf ( 1, '  Saving the transformed grid.\n' );
+    fprintf ( 1, '  Saving the sources model.\n' );
     
-    % Updates the anatomy data with the source model.
-    srcdata.subject  = sprintf ( '%s_%s', srcdata.subject, srctemp.subject );
-    srcdata.grid     = srcmodel;
+    % Creates the head model.
+    headdata           = [];
+    headdata.subject   = mridata.subject;
+    headdata.model     = mesh.type;
+    headdata.sources   = srctemp.model;
+    headdata.mri       = mridata.mri;
+    headdata.landmark  = mridata.landmark;
+    headdata.transform = mridata.transform;
+    headdata.mesh      = mesh;
+    headdata.scalp     = mridata.scalp;
+    headdata.grid      = srcmodel;
     
     % Saves the head model.
-    save ( '-v6', sprintf ( '%s%s', config.path.head, srcdata.subject ), '-struct', 'srcdata' );
+    save ( '-v6', sprintf ( '%s%s_%s_%s.mat', config.path.head, headdata.subject, headdata.model, headdata.sources ), '-struct', 'headdata' );
 end
