@@ -7,7 +7,7 @@ config.path.head = '../../template/headmodel/';
 config.path.patt = '*.mat';
 
 % If the data will only be used for EEG, trims the head matrix.
-config.trim      = false;
+config.trim      = true;
 
 % If no dipole fitting, removes the head matrix after calculating hm\dsm.
 config.clean     = true;
