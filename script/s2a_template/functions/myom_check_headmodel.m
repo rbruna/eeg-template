@@ -1,8 +1,5 @@
 function headmodel = myom_check_headmodel ( headmodel )
 
-global my_silent; %#ok<GVMIS>
-my_silent = ~isempty ( my_silent ) && my_silent;
-
 
 % Gets the number of meshes.
 nmeshes = numel ( headmodel.bnd );
@@ -45,7 +42,7 @@ for mindex = 1: nmeshes
     % For OpenMEEG the normals of the meshes mush be inward-oriented.
     if ~checkomnormals ( headmodel.bnd ( mindex ) )
         
-        if ~my_silent, fprintf ( 1, 'Flipping the normals in mesh %i to fit OpenMEEG convention.\n', mindex ); end
+        if myom_verbosity, fprintf ( 1, 'Flipping the normals in mesh %i to fit OpenMEEG convention.\n', mindex ); end
         
         % Flips the triangle definition.
         headmodel.bnd ( mindex ).tri = fliplr ( headmodel.bnd ( mindex ).tri );

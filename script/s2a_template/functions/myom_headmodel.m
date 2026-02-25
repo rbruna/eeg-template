@@ -2,9 +2,6 @@ function headmodel = myom_headmodel ( headmodel )
 % Based on FiedTrip functions:
 % * ft_headmodel_openmeeg
 
-global my_silent %#ok<GVMIS>
-my_silent = ~isempty ( my_silent ) && my_silent;
-
 
 % Adds OpenMEEG to the path.
 ft_hastoolbox ( 'openmeeg', 1, 1 );
@@ -24,7 +21,7 @@ myom_write_geometry ( basename, headmodel )
 
 
 % Calculates the head matrix.
-if ~my_silent
+if myom_verbosity
     status = system ( sprintf ( 'om_assemble -hm "%s.geom" "%s.cond" "%s_hm.mat"\n', basename, basename, basename ) );
 else
     [ status, output ] = system ( sprintf ( 'om_assemble -hm "%s.geom" "%s.cond" "%s_hm.mat"\n', basename, basename, basename ) );
@@ -32,7 +29,7 @@ end
 
 % Checks for the completion of the execution.
 if status ~= 0
-    if my_silent, fprintf ( 1, '%s', output ); end
+    if myom_verbosity == 0, fprintf ( 1, '%s', output ); end
     fprintf ( 2, 'OpenMEEG program ''om_assemble'' exited with error code %i.\n', status );
     
     % Removes all the temporal files and exits.

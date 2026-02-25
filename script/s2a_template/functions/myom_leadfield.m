@@ -7,9 +7,6 @@ function leadfield = myom_leadfield ( headmodel, grid, sens )
 % * openmeeg_dsm by Alexandre Gramfort
 % * openmeeg_megm by Emmanuel Olivi
 
-global my_silent; %#ok<GVMIS>
-my_silent = ~isempty ( my_silent ) && my_silent;
-
 
 % Adds OpenMEEG to the path.
 ft_hastoolbox ( 'openmeeg', 1, 1 );
@@ -49,7 +46,7 @@ has_h2xmhm = iseeg && has_h2emhm || ismeg && has_h2mmhm;
 % Calculates the head matrix, if required.
 if ~has_hm && ~has_ihm && ~has_hmdsm && ~has_h2xmhm
     
-    if ~my_silent, fprintf ( 1, 'Head model matrix not present in the data. Calculating it.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Head model matrix not present in the data. Calculating it.\n' ); end
     
     headmodel  = myom_headmodel ( headmodel );
     has_hm     = true;
@@ -58,7 +55,7 @@ end
 % Calculates the sources to head matrix, if required.
 if ~has_dsm && ~has_hmdsm
     
-    if ~my_silent, fprintf ( 1, 'Source matrix not present in the data. Calculating it.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Source matrix not present in the data. Calculating it.\n' ); end
     
     headmodel  = myom_sourcematrix ( headmodel, grid );
     has_dsm    = true;
@@ -67,7 +64,7 @@ end
 % Calculates the head to electrodes matrix, if required.
 if iseeg
     
-    if ~my_silent, fprintf ( 1, 'Head to electrodes matrix not present in the data. Calculating it.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Head to electrodes matrix not present in the data. Calculating it.\n' ); end
     
     headmodel  = myom_addelec ( headmodel, sens );
     has_h2xm   = true;
@@ -76,7 +73,7 @@ end
 % Calculates the head to coils and source to coils matrices, if required.
 if ismeg
     
-    if ~my_silent, fprintf ( 1, 'Head to coils and source to coils matrices not present in the data. Calculating them.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Head to coils and source to coils matrices not present in the data. Calculating them.\n' ); end
     
     headmodel  = myom_addcoils ( headmodel, grid, sens );
     has_h2xm   = true;
@@ -94,7 +91,7 @@ end
 % Calculates the leadfield using h2em * hm\dsm.
 if iseeg && has_h2xm && has_hmdsm
     
-    if ~my_silent, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
     
     % Calculates the leadfield.
     leadfield = headmodel.h2em * headmodel.hm_dsm;
@@ -104,7 +101,7 @@ end
 % Calculates the leadfield using h2em/hm * dsm.
 if iseeg && has_h2xmhm && has_dsm
     
-    if ~my_silent, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
     
     % Calculates the leadfield.
     leadfield = headmodel.h2em_hm * headmodel.dsm;
@@ -114,7 +111,7 @@ end
 % Calculates the leadfield using h2em * inv(hm) * dsm.
 if iseeg && has_h2xm && has_ihm && has_dsm
     
-    if ~my_silent, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
     
     % Calculates the leadfield.
     leadfield = headmodel.h2em * headmodel.ihm * headmodel.dsm;
@@ -124,7 +121,7 @@ end
 % Calculates the leadfield using ( h2em / hm ) * dsm.
 if iseeg && has_h2xm && has_hm && has_dsm
     
-    if ~my_silent, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
     
     % Expands the symmetric matrix for the head model, if required.
     if isstruct ( headmodel.hm )
@@ -140,7 +137,7 @@ end
 % Calculates the leadfield using h2mm * hm\dsm.
 if ismeg && has_h2xm && has_hmdsm
     
-    if ~my_silent, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
     
     % Calculates the leadfield.
     leadfield = headmodel.h2mm * headmodel.hm_dsm;
@@ -151,7 +148,7 @@ end
 % Calculates the leadfield using h2mm/hm * dsm.
 if ismeg && has_h2xmhm && has_dsm
     
-    if ~my_silent, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
     
     % Calculates the leadfield.
     leadfield = headmodel.h2mm_hm * headmodel.dsm;
@@ -162,7 +159,7 @@ end
 % Calculates the leadfield using h2mm * inv(hm) * dsm.
 if ismeg && has_h2xm && has_ihm && has_dsm
     
-    if ~my_silent, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
     
     % Calculates the leadfield.
     leadfield = headmodel.h2mm * headmodel.ihm * headmodel.dsm;
@@ -173,7 +170,7 @@ end
 % Calculates the leadfield using ( h2mm / hm ) * dsm.
 if ismeg && has_h2xm && has_hm && has_dsm && has_s2mm
     
-    if ~my_silent, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Building the leadfield matrix.\n' ); end
     
     % Expands the symmetric matrix for the head model, if required.
     if isstruct ( headmodel.hm )

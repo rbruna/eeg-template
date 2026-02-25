@@ -7,9 +7,6 @@ function headmodel = myom_sourcematrix ( headmodel, grid )
 % * openmeeg_dsm by Alexandre Gramfort
 % * openmeeg_megm by Emmanuel Olivi
 
-global my_silent %#ok<GVMIS>
-my_silent  = ~isempty ( my_silent ) && my_silent;
-
 
 % Adds OpenMEEG to the path.
 ft_hastoolbox ( 'openmeeg', 1, 1 );
@@ -42,7 +39,7 @@ srctissue = headmodel.tissue { headmodel.source };
 
 
 % Calculates the dipoles matrix.
-if ~my_silent
+if myom_verbosity
     status = system ( sprintf ( 'om_assemble -dsm "%s.geom" "%s.cond" "%s.dip" "%s_dsm.mat" "%s"\n', basename, basename, basename, basename, srctissue ) );
 else
     [ status, output ] = system ( sprintf ( 'om_assemble -dsm "%s.geom" "%s.cond" "%s.dip" "%s_dsm.mat" "%s"\n', basename, basename, basename, basename, srctissue ) );
@@ -50,7 +47,7 @@ end
 
 % Checks for the completion of the execution.
 if status ~= 0
-    if my_silent, fprintf ( 1, '%s', output ); end
+    if myom_verbosity == 0, fprintf ( 1, '%s', output ); end
     fprintf ( 2, 'OpenMEEG program ''om_assemble'' exited with error code %i.\n', status );
 
     % Removes all the temporal files and exits.
@@ -70,7 +67,7 @@ delete ( sprintf ( '%s*', basename ) );
 % % If the headmodel matrix is present calculates hm_dsm.
 % if isfield ( headmodel, 'hm' )
 % 
-%     if ~my_silent, fprintf ( 1, 'Calculating inv ( hm ) * dsm.\n' ); end
+%     if myom_verbosity, fprintf ( 1, 'Calculating inv ( hm ) * dsm.\n' ); end
 % 
 %     % Transforms the head model matrix to a symmetric matrix.
 %     if isstruct ( headmodel.hm )
@@ -85,7 +82,7 @@ delete ( sprintf ( '%s*', basename ) );
 % 
 % elseif isfield ( headmodel, 'ihm' )
 % 
-%     if ~my_silent, fprintf ( 1, 'Calculating inv ( hm ) * dsm.\n' ); end
+%     if myom_verbosity, fprintf ( 1, 'Calculating inv ( hm ) * dsm.\n' ); end
 % 
 %     % Calculates inv ( hm ) * dsm.
 %     headmodel.hm_dsm = headmodel.ihm * headmodel.dsm;

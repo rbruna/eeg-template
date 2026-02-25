@@ -2,9 +2,6 @@ function headmodel = myom_build_sens ( headmodel, clean )
 
 % Joins the head and sensor matrices, if both available.
 
-global my_silent; %#ok<GVMIS>
-my_silent = ~isempty ( my_silent ) && my_silent;
-
 
 % Checks the input.
 if nargin < 2
@@ -28,7 +25,7 @@ has_h2mmhm = isfield ( headmodel, 'h2mm_hm' );
 % If electrodes and inverse head matrices are pressent, calculates h2em/hm.
 if ~has_h2emhm && has_ihm && has_h2em
     
-    if ~my_silent, fprintf ( 1, 'Calculating h2em * inv ( hm ).\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Calculating h2em * inv ( hm ).\n' ); end
     
     % Calculates h2em * inv ( hm ).
     headmodel.h2em_hm = headmodel.h2em * headmodel.ihm;
@@ -38,7 +35,7 @@ end
 % If coils and inverse head matrices are pressent, calculates h2mm/hm.
 if ~has_h2mmhm && has_ihm && has_h2mm
     
-    if ~my_silent, fprintf ( 1, 'Calculating h2em * inv ( hm ).\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Calculating h2em * inv ( hm ).\n' ); end
     
     % Calculates h2em * inv ( hm ).
     headmodel.h2mm_hm = headmodel.h2mm * headmodel.ihm;
@@ -49,7 +46,7 @@ end
 % If electrodes and head matrices are pressent, calculates h2em/hm.
 if ~has_h2emhm && has_hm && has_h2em
     
-    if ~my_silent, fprintf ( 1, 'Calculating h2em * inv ( hm ).\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Calculating h2em * inv ( hm ).\n' ); end
     
     % Expands the symmetric matrix for the head model, if required.
     if isstruct ( headmodel.hm )
@@ -66,7 +63,7 @@ end
 % If coils and head matrices are pressent, calculates h2mm/hm.
 if ~has_h2mmhm && has_hm && has_h2mm
     
-    if ~my_silent, fprintf ( 1, 'Calculating h2em * inv ( hm ).\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Calculating h2em * inv ( hm ).\n' ); end
     
     % Expands the symmetric matrix for the head model, if required.
     if isstruct ( headmodel.hm )

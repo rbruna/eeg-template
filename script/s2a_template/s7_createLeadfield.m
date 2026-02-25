@@ -29,10 +29,8 @@ myft_path
 ft_hastoolbox ( 'spm8', 1, 1 );
 ft_hastoolbox ( 'openmeeg', 1, 1 );
 
-
 % Sets OpenMEEG in silent mode.
-global my_silent %#ok<*GVMIS>
-my_silent = true;
+myom_verbosity (0)
 
 
 % Gets the files list.
@@ -240,7 +238,7 @@ for file = 1: numel ( files )
     leaddata.elec      = elec;
     leaddata.mesh      = mesh;
     leaddata.grid      = srcmodel;
-    
+    return
     % Saves the lead field.
     save ( '-v6', sprintf ( '%s%s', config.path.lead, traninfo.subject ), '-struct', 'leaddata' );
 end

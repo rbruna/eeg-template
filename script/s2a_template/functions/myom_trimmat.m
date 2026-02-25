@@ -4,10 +4,6 @@ function headmodel = myom_trimmat ( headmodel )
 % nodes in the scalp (outermost) mesh.
 
 
-global my_silent; %#ok<GVMIS>
-my_silent = ~isempty ( my_silent ) && my_silent;
-
-
 % Gets the dimensions of the surface meshes.
 npos      = arrayfun ( @(bnd) size ( bnd.pos, 1 ), headmodel.bnd );
 ntri      = arrayfun ( @(bnd) size ( bnd.tri, 1 ), headmodel.bnd );
@@ -27,7 +23,7 @@ sindex    = offset + ( 1: npos ( end ) );
 % Modifies the inverse head matrix, if present.
 if isfield ( headmodel, 'ihm' )
     
-    if ~my_silent, fprintf ( 1, 'Trimming the head model matrix.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Trimming the head model matrix.\n' ); end
     
     % Keeps only the system matrix related to the scalp nodes.
     headmodel.tihm    = headmodel.ihm ( sindex, : );
@@ -39,7 +35,7 @@ end
 % Modifies the hm\dsm matrix, if present.
 if isfield ( headmodel, 'hm_dsm' )
     
-    if ~my_silent, fprintf ( 1, 'Trimming the potential matrix.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Trimming the potential matrix.\n' ); end
     
     % Keeps only the potential related to the scalp nodes.
     headmodel.thm_dsm = headmodel.hm_dsm ( sindex, : );
@@ -51,7 +47,7 @@ end
 % Modifies the head to electrodes matrix, if present.
 if isfield ( headmodel, 'h2em' )
     
-    if ~my_silent, fprintf ( 1, 'Trimming the electrodes matrix.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Trimming the electrodes matrix.\n' ); end
     
     % Keeps only the potential related to the scalp nodes.
     headmodel.th2em   = headmodel.h2em ( :, sindex );
@@ -63,7 +59,7 @@ end
 % Adds the scalp boundary, if required.
 if isfield ( headmodel, 'tihm' ) || isfield ( headmodel, 'thm_dsm' )
     
-    if ~my_silent, fprintf ( 1, 'Getting the scalp boundary.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Getting the scalp boundary.\n' ); end
     
     % Gets the outermost boundary.
     headmodel.scalp   = headmodel.bnd ( end );

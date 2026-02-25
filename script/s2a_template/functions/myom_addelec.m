@@ -19,10 +19,6 @@ if ~iseeg, error ( 'This function can only by used with an EEG sensor definition
 if ~xor ( ismeg, iseeg ), error ( 'The sensor type could not be identified as EEG or MEG. Aborting.\n' ); end
 
 
-global my_silent %#ok<GVMIS>
-my_silent  = ~isempty ( my_silent ) && my_silent;
-
-
 % Adds OpenMEEG to the path.
 ft_hastoolbox ( 'openmeeg', 1, 1 );
 
@@ -56,7 +52,7 @@ if ~isfield ( headmodel, 'h2em' ) || ...
 %     
 %     
 %     % Calculates the head surface to electrodes matrix using OpenMEEG.
-%     if ~my_silent
+%     if myom_verbosity
 %         status = system ( sprintf ( 'om_assemble -h2em "%s.geom" "%s.cond" "%s_sens.txt" "%s_h2em.mat"\n', basename, basename, basename, basename ) );
 %     else
 %         [ status, output ] = system ( sprintf ( 'om_assemble -h2em "%s.geom" "%s.cond" "%s_sens.txt" "%s_h2em.mat"\n', basename, basename, basename, basename ) );
@@ -64,7 +60,7 @@ if ~isfield ( headmodel, 'h2em' ) || ...
 %     
 %     % Checks for the completion of the execution.
 %     if status ~= 0
-%         if my_silent, fprintf ( 1, '%s', output ); end
+%         if myom_verbosity == 0, fprintf ( 1, '%s', output ); end
 %         fprintf ( 2, 'OpenMEEG program ''om_assemble'' exited with error code %i.\n', status );
 %         
 %         % Removes all the temporal files and exits.

@@ -7,9 +7,6 @@ function headmodel = myom_transmat ( headmodel, sens )
 % * openmeeg_dsm by Alexandre Gramfort
 % * openmeeg_megm by Emmanuel Olivi
 
-global my_silent; %#ok<GVMIS>
-my_silent = ~isempty ( my_silent ) && my_silent;
-
 
 % Adds OpenMEEG to the path.
 ft_hastoolbox ( 'openmeeg', 1, 1 );
@@ -29,7 +26,7 @@ if ~xor ( ismeg, iseeg ), error ( 'The sensor type could not be identified as EE
 % If no headmodel matrix, calculates it using myom_headmodel.
 if ~isfield ( headmodel, 'hm' ) && ~isfield ( headmodel, 'ihm' ) && ~isfield ( headmodel, 'hm_dsm' )
     
-    if ~my_silent, fprintf ( 1, 'Head model matrix not present in the data. Calculating it.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Head model matrix not present in the data. Calculating it.\n' ); end
     
     headmodel = myom_headmodel ( headmodel, true );
 end
@@ -60,7 +57,7 @@ end
 if ismeg
     
     % Calculates the head surface to MEG matrix.
-    if ~my_silent
+    if myom_verbosity
         status = system ( sprintf ( 'om_assemble -h2mm "%s.geom" "%s.cond" "%s_sens.txt" "%s_h2mm.mat"\n', basename, basename, basename, basename ) );
     else
         [ status, output ] = system ( sprintf ( 'om_assemble -h2mm "%s.geom" "%s.cond" "%s_sens.txt" "%s_h2mm.mat"\n', basename, basename, basename, basename ) );
@@ -68,7 +65,7 @@ if ismeg
     
     % Checks for the completion of the execution.
     if status ~= 0
-        if my_silent, fprintf ( 1, '%s', output ); end
+        if myom_verbosity == 0, fprintf ( 1, '%s', output ); end
         fprintf ( 2, 'OpenMEEG program ''om_assemble'' exited with error code %i.\n', status );
         
         % Removes all the temporal files and exits.
@@ -89,7 +86,7 @@ end
 if iseeg
     
     % Calculates the head surface to EEG matrix.
-    if ~my_silent
+    if myom_verbosity
         status = system ( sprintf ( 'om_assemble -h2em "%s.geom" "%s.cond" "%s_sens.txt" "%s_h2em.mat"\n', basename, basename, basename, basename ) );
     else
         [ status, output ] = system ( sprintf ( 'om_assemble -h2em "%s.geom" "%s.cond" "%s_sens.txt" "%s_h2em.mat"\n', basename, basename, basename, basename ) );
@@ -97,7 +94,7 @@ if iseeg
     
     % Checks for the completion of the execution.
     if status ~= 0
-        if my_silent, fprintf ( 1, '%s', output ); end
+        if myom_verbosity == 0, fprintf ( 1, '%s', output ); end
         fprintf ( 2, 'OpenMEEG program ''om_assemble'' exited with error code %i.\n', status );
         
         % Removes all the temporal files and exits.

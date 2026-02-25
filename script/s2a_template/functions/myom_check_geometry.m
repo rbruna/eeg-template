@@ -1,8 +1,5 @@
 function varargout = myom_check_geometry ( headmodel )
 
-global my_silent; %#ok<GVMIS>
-my_silent = ~isempty ( my_silent ) && my_silent;
-
 
 % Checks that OpenMEEG is installed and the binaries are valid.
 myom_init
@@ -32,7 +29,7 @@ delete ( sprintf ( '%s_*', tmpprefix ) );
 
 
 % Shows the results, if requested.
-if ~my_silent
+if myom_verbosity
     
     % Shows the output of om_check_geom.
     fprintf ( 1, '%s\n', output );

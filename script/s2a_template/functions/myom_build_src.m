@@ -2,9 +2,6 @@ function headmodel = myom_build_src ( headmodel, clean )
 
 % Joins the head and source matrices, if both available.
 
-global my_silent; %#ok<GVMIS>
-my_silent = ~isempty ( my_silent ) && my_silent;
-
 
 % Checks the input.
 if nargin < 2
@@ -25,7 +22,7 @@ has_hmdsm = isfield ( headmodel, 'hm_dsm' );
 % If the source and inverse head matrices are present, calculates hm_dsm.
 if ~has_hmdsm && has_ihm && has_dsm
     
-    if ~my_silent, fprintf ( 1, 'Calculating inv ( hm ) * dsm.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Calculating inv ( hm ) * dsm.\n' ); end
     
     % Calculates inv ( hm ) * dsm.
     headmodel.hm_dsm = headmodel.ihm * headmodel.dsm;
@@ -35,7 +32,7 @@ end
 % If the source and head matrices are present, calculates hm_dsm.
 if ~has_hmdsm && has_hm && has_dsm
     
-    if ~my_silent, fprintf ( 1, 'Calculating inv ( hm ) * dsm.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Calculating inv ( hm ) * dsm.\n' ); end
     
     % Expands the symmetric matrix for the head model, if required.
     if isstruct ( headmodel.hm )

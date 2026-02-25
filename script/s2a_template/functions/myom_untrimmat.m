@@ -4,10 +4,6 @@ function headmodel = myom_untrimmat ( headmodel )
 % nodes in the scalp (outermost) mesh.
 
 
-global my_silent; %#ok<GVMIS>
-my_silent = ~isempty ( my_silent ) && my_silent;
-
-
 % Gets the dimensions of the surface meshes.
 npos      = arrayfun ( @(bnd) size ( bnd.pos, 1 ), headmodel.bnd );
 ntri      = arrayfun ( @(bnd) size ( bnd.tri, 1 ), headmodel.bnd );
@@ -30,7 +26,7 @@ sindex    = offset + ( 1: npos ( end ) );
 % Modifies the inverse head matrix, if present.
 if isfield ( headmodel, 'tihm' )
     
-    if ~my_silent, fprintf ( 1, 'Expanding the head model matrix.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Expanding the head model matrix.\n' ); end
     
     % Generates an empty inverse head matrix.
     headmodel.ihm    = zeros ( nelem, nelem );
@@ -45,7 +41,7 @@ end
 % Modifies the hm\dsm matrix, if present.
 if isfield ( headmodel, 'thm_dsm' )
     
-    if ~my_silent, fprintf ( 1, 'Expanding the potential matrix.\n' ); end
+    if myom_verbosity, fprintf ( 1, 'Expanding the potential matrix.\n' ); end
     
     % Gets the number of source positions.
     nsrc             = size ( headmodel.thm_dsm, 2 );
