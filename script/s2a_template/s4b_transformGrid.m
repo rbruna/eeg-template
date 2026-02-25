@@ -43,10 +43,10 @@ srctemp = load ( config.sources );
 files = dir ( sprintf ( '%s%s', config.path.mri, config.path.patt ) );
 
 % Goes through all the files.
-for file = 1: numel ( files )
+for findex = 1: numel ( files )
     
     % Pre-loads the anatomy.
-    mridata           = load ( sprintf ( '%s%s', config.path.mri, files ( file ).name ), 'subject', 'mesh' );
+    mridata           = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'mesh' );
     
     if strcmp ( config.model, 'ss' )
         meshtype          = 'singleshell';
@@ -63,7 +63,7 @@ for file = 1: numel ( files )
     fprintf ( 1, 'Working on subject %s.\n', mridata.subject );
     
     % Loads the anatomy and the surface mesh(es).
-    mridata           = load ( sprintf ( '%s%s', config.path.mri, files ( file ).name ), 'subject', 'mri', 'landmark', 'transform', 'mesh', 'scalp' );
+    mridata           = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'mri', 'landmark', 'transform', 'mesh', 'scalp' );
     mri               = mridata.mri;
     transform         = mridata.transform;
     mesh              = mridata.mesh;
