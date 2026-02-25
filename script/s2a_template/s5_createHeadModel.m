@@ -2,21 +2,18 @@ clc
 clear
 close all
 
-% Sets the path.
+% Defines the location of the files.
 config.path.head = '../../template/headmodel/';
 config.path.patt = '*.mat';
-
-% Action when the task have already been processed.
-config.overwrite = true;
-
-% Forward model ('singleshell' or 'auto').
-config.model     = 'auto';
 
 % If the data will only be used for EEG, trims the head matrix.
 config.trim      = false;
 
 % If no dipole fitting, removes the head matrix after calculating hm\dsm.
 config.clean     = true;
+
+% Action when the task have already been processed.
+config.overwrite = false;
 
 
 % Adds the functions folders to the path.
@@ -40,17 +37,20 @@ files            = dir ( sprintf ( '%s%s', config.path.head, config.path.patt ) 
 % Goes through all the files.
 for findex = 1: numel ( files )
     
-    % Loads the MRI data and extracts the surfaces and the source model.
-    headdata         = load ( sprintf ( '%s%s', config.path.head, files ( findex ).name ), 'subject', 'mesh', 'grid' );
+    % Pre-loads the anatomy.
+    headdata         = load ( sprintf ( '%s%s', config.path.head, files ( findex ).name ), 'subject', 'model', 'sources' );
     
     fileinfo         = whos ( '-file', sprintf ( '%s%s', config.path.head, files ( findex ).name ) );
     if ismember ( 'headmodel', { fileinfo.name } ) && ~config.overwrite
-        fprintf ( 1, 'Ignoring subject %s (Already calculated).\n', headdata.subject );
+        fprintf ( 1, 'Ignoring subject ''%s'', head model ''%s'', sources model ''%s'' (already calculated).\n', headdata.subject, headdata.model, headdata.sources );
         continue
     end
     
+    % Loads the anatomy except for the source model, if present.
+    headdata         = load ( sprintf ( '%s%s', config.path.head, files ( findex ).name ), '-regexp', '^(?!headmodel)\w' );
     
-    fprintf ( 1, 'Working on subject %s.\n', headdata.subject );
+    
+    fprintf ( 1, 'Working on subject ''%s'', head model ''%s'', sources model ''%s''.\n', headdata.subject, headdata.model, headdata.sources );
     
     % Initializes the head model to the geometrical definition of the head.
     headmodel        = headdata.mesh;
@@ -59,7 +59,7 @@ for findex = 1: numel ( files )
     fprintf ( 1, '  Creating the volumen conductor.\n' );
     
     % If single shell uses only the brain surface.
-    if strcmp ( config.model, 'singleshell' ) || ismember ( headmodel.type, { 'singleshell' } )
+    if ismember ( headmodel.type, { 'singleshell' } )
         
         % Gets only the brain surface.
         headmodel.type   = 'singleshell';
@@ -76,7 +76,7 @@ for findex = 1: numel ( files )
     end
     
     % If BEM uses the three surfaces.
-    if strcmp ( config.model, 'bem' ) || ismember ( headmodel.type, { 'bem3', 'bem3FT', 'bem3NFT' } )
+    if ismember ( headmodel.type, { 'bem3', 'bem3FT', 'bem3NFT' } )
         
         % Checks that all the surfaces are available.
         if ~all ( ismember ( { 'brain', 'skull', 'scalp' }, headmodel.tissue ) )
@@ -89,12 +89,6 @@ for findex = 1: numel ( files )
         
         % The size of the head matrix is:
         % # of points + # of triangles - # of triangles in the outer mesh.
-        
-%         % The sources are oriented with the axis of the MRI coordinate system.
-%         headdata.grid.ori = eye (3);
-        
-%         % Removes the orientation from the grid.
-%         grid             = rmfield ( mridata.grid, 'ori' );
         
         % Creates the sources matrix using OpenMEEG.
         headmodel        = myom_sourcematrix ( headmodel, headdata.grid );
@@ -112,7 +106,10 @@ for findex = 1: numel ( files )
     
     
     fprintf ( 1, '  Saving the volume conductor.\n' );
+
+    % Adds the head model to the data.
+    headdata.headmodel = headmodel;
     
     % Saves the head model.
-    save ( '-v6', sprintf ( '%s%s', config.path.head, headdata.subject ), '-append', 'headmodel' );
+    save ( '-v6', sprintf ( '%s%s_%s_%s', config.path.head, headdata.subject, headdata.model, headdata.sources ), '-struct', 'headdata' );
 end
