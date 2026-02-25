@@ -10,7 +10,7 @@ config.path.patt = '*.mat';
 % Defines the head model. Can be 'bem3', 'ss' (single shell) or 'auto'.
 config.model     = 'bem3';
 
-% Defines the template grid to use.
+% Defines the template sources model to use.
 config.sources   = '../../template/grid/MNI-surface.mat';
 config.sources   = '../../template/grid/CTB-10mm.mat';
 
