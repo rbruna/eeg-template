@@ -2,7 +2,7 @@ clc
 clear
 close all
 
-% Sets the path.
+% Defines the location of the files.
 config.path.mri  = '../../template/anatomy/';
 config.path.head = '../../template/headmodel/';
 config.path.patt = '*.mat';
@@ -91,17 +91,19 @@ for file = 1: numel ( files )
     
     fprintf ( 1, '  Transforming the template (MNI) sources model to subject space.\n' );
     
-    % Transforms the MNI grid to subject's native space.
+    % Gets the template (MNI) sources model.
     srcmodel          = srctemp.sourcemodel;
+    
+    % Stores the original source definition.
+    srcmodel.posori  = srcmodel.pos;
+    if isfield ( srcmodel, 'nrm' )
+        srcmodel.nrmori   = srcmodel.nrm;
+    end
+    
+    % Transforms the sources model to subject's native space.
     srcmodel          = ft_convert_units ( srcmodel, transform.unit );
     srcmodel          = ft_transform_geometry ( transform.mni2nat, srcmodel );
     srcmodel          = ft_convert_units ( srcmodel, 'm' );
-    
-    % Stores the original source definition.
-    srcmodel.posori  = srctemp.sourcemodel.pos;
-    if isfield ( srctemp.sourcemodel, 'nrm' )
-        srcmodel.nrmori   = srctemp.sourcemodel.nrm;
-    end
     
     
     % Moves the sources inside the brain surface for BEM methods.
