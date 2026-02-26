@@ -2,7 +2,7 @@ clc
 clear
 close all
 
-% Sets the path.
+% Defines the location of the files.
 config.path.tran = '../../template/sens/';
 config.path.figs = '../../figs-template/transform/';
 config.path.patt = '*.mat';

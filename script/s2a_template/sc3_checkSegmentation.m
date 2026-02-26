@@ -2,7 +2,7 @@ clc
 clear
 close all
 
-% Defines the files locations.
+% Defines the location of the files.
 config.path.mri  = '../../template/anatomy/';
 config.path.figs = '../../figs-template/seg/';
 config.path.patt = '*.mat';

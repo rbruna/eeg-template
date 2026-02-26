@@ -2,7 +2,7 @@ clc
 clear
 close all
 
-% Sets the path.
+% Defines the location of the files.
 config.path.head   = '../../template/headmodel/';
 config.path.temp   = 'standard_1005.elc';
 config.path.temp   = '../../template/rawsens/ant64dry.mat';

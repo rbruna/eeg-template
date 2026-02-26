@@ -2,7 +2,7 @@ clc
 clear
 close all
 
-% Sets the path.
+% Defines the location of the files.
 config.path.lead     = '../../template/leadfield/';
 config.path.figs     = '../../figs-template/leadfield/';
 config.path.patt     = '*.mat';
