@@ -181,12 +181,12 @@ end
 
 
 handles.data = [];
-handles.data.subject   = transdata.subject;
+handles.data.subject = transdata.subject;
 
-% Stores the headshape and the sensor definition.
-handles.data.grad      = ft_convert_units ( transdata.grad,      'mm' );
-handles.data.elec      = ft_convert_units ( transdata.elec,      'mm' );
-handles.data.headshape = ft_convert_units ( transdata.headshape, 'mm' );
+% Stores the heads hape and the sensor definition.
+handles.data.grad    = ft_convert_units ( transdata.grad,      'mm' );
+handles.data.elec    = ft_convert_units ( transdata.elec,      'mm' );
+handles.data.hshape  = ft_convert_units ( transdata.headshape, 'mm' );
 
 
 % Puts the subject name in the GUI title bar.
@@ -264,7 +264,7 @@ end
 if handles.config.current < numel ( handles.config.files )
     set ( handles.nextSubject, 'Enable', 'on'  );
 end
-if ~isempty ( handles.data.headshape.pos )
+if ~isempty ( handles.data.hshape.pos )
     set ( handles.showError, 'Enable', 'on'  )
     set ( handles.fitMRIICP, 'Enable', 'on'  )
 end
@@ -442,7 +442,7 @@ mrifid = handles.data.landmark;
 mrifid = [ mrifid.lpa; mrifid.nas; mrifid.rpa ];
 
 % Gets the head shape fiducials.
-hsfid  = handles.data.headshape.fid;
+hsfid  = handles.data.hshape.fid;
 hslpa  = find ( strcmpi ( hsfid.label, 'LPA' ),    1 );
 hsnas  = find ( strcmpi ( hsfid.label, 'Nasion' ), 1 );
 hsrpa  = find ( strcmpi ( hsfid.label, 'RPA' ),    1 );
@@ -456,16 +456,16 @@ setTrans ( handles, my_rigid_transform ( hsfid', mrifid' ) );
 
 function fitUsingICP ( handles )
 
-% Gets the scalp and the headshape.
-headshape  = handles.data.headshape;
-scalpshape = handles.data.scalp;
+% Gets the scalp and the head shape.
+hshape    = handles.data.hshape;
+scalp     = handles.data.scalp;
 
 % Gets the complete transformation.
-transform  = handles.data.transform.original * handles.data.transform.user;
-scalpshape = ft_transform_geometry ( transform, scalpshape );
+transform = handles.data.transform.original * handles.data.transform.user;
+scalp     = ft_transform_geometry ( transform, scalp );
 
-% Calculates the transformation from headshape to MRI scalp.
-invtrans   = my_icp ( scalpshape.bnd.pos, headshape.pos );
+% Calculates the transformation from head shape to MRI scalp.
+invtrans  = my_icp ( scalp.bnd.pos, hshape.pos );
 
 % Updates the transformation and resets the sliders.
 setTrans ( handles, transform / invtrans );
@@ -579,16 +579,16 @@ cla   ( handles.axes );
 set   ( handles.infoText, 'String', '' )
 
 
-% Gets the headshape, the MEG fiducials and the sensors position.
-hpiindex  = strncmp ( handles.data.headshape.label, 'hpi_', 4 );
-hpicoils  = handles.data.headshape.pos (  hpiindex, : );
-headshape = handles.data.headshape.pos ( ~hpiindex, : );
-hsfid     = handles.data.headshape.fid.pos;
+% Gets the head shape, the MEG fiducials and the sensors position.
+hpiindex  = strncmp ( handles.data.hshape.label, 'hpi_', 4 );
+hpicoils  = handles.data.hshape.pos (  hpiindex, : );
+hshape    = handles.data.hshape.pos ( ~hpiindex, : );
+hsfid     = handles.data.hshape.fid.pos;
 
-% Draws the headshape and the MEG fiducials.
-plot3 ( handles.axes, headshape ( :, 1 ), headshape ( :, 2 ), headshape ( :, 3 ), '.b' )
-plot3 ( handles.axes, hsfid     ( :, 1 ), hsfid     ( :, 2 ), hsfid     ( :, 3 ), '.k', 'MarkerSize', 20 )
-plot3 ( handles.axes, hpicoils  ( :, 1 ), hpicoils  ( :, 2 ), hpicoils  ( :, 3 ), '.r', 'MarkerSize', 20 )
+% Draws the head shape and the MEG fiducials.
+plot3 ( handles.axes, hshape   ( :, 1 ), hshape   ( :, 2 ), hshape   ( :, 3 ), '.b' )
+plot3 ( handles.axes, hsfid    ( :, 1 ), hsfid    ( :, 2 ), hsfid    ( :, 3 ), '.k', 'MarkerSize', 20 )
+plot3 ( handles.axes, hpicoils ( :, 1 ), hpicoils ( :, 2 ), hpicoils ( :, 3 ), '.r', 'MarkerSize', 20 )
 
 % If required, draws the sensors.
 if get ( handles.drawSensors, 'Value' ) && isfield ( handles.data.grad, 'chanpos' )
@@ -654,14 +654,14 @@ campos ( handles.axes, camera );
 % If required, shows the errors.
 if get ( handles.showError,   'Value' )
     
-    % Extracts the headshape and scalp points.
-    headshape = handles.data.headshape;
-    hsp       = headshape.pos;
-    scalp     = ft_transform_geometry ( transform, handles.data.scalp.bnd );
-    sp        = scalp.pos;
+    % Extracts the head shape and scalp points.
+    hshape = handles.data.hshape;
+    hsp    = hshape.pos;
+    scalp  = ft_transform_geometry ( transform, handles.data.scalp.bnd );
+    sp     = scalp.pos;
     
-    % Calculates the minimum distance from a headshape point to a scalp point.
-    dists = zeros ( size ( hsp, 1 ), 1 );
+    % Calculates the minimum distance from a head shape point to a scalp point.
+    dists  = zeros ( size ( hsp, 1 ), 1 );
     for i = 1: numel ( dists )
         dist        = hsp ( i * ones ( size ( sp, 1 ), 1 ), : ) - sp;
         [ ~, pnt ]  = min ( sum ( dist .^ 2, 2 ) );
@@ -670,7 +670,7 @@ if get ( handles.showError,   'Value' )
     
     % Sets the error information.
     info {1} = sprintf ( 'Maximum error: %.1f mm. Mean error: %.1f (%.1f) mm. Median error: %.1f mm.', max ( dists ), mean ( dists ), std ( dists ), median ( dists ) );
-    info {2} = sprintf ( 'Number of headshape points farther than 5mm form scalp: %i (%.1f%%).', sum ( dists > 5 ), 100 * sum ( dists > 5 ) / numel ( dists ) );
+    info {2} = sprintf ( 'Number of head shape points farther than 5mm form scalp: %i (%.1f%%).', sum ( dists > 5 ), 100 * sum ( dists > 5 ) / numel ( dists ) );
     
     % Displays the error information in the info text box.
     set ( handles.infoText, 'String', info )

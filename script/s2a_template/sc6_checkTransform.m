@@ -66,7 +66,7 @@ for findex = 1: numel ( files )
     grid      = headdata.grid;
     
     % Gets the head shape.
-    headshape = traninfo.headshape;
+    hshape    = traninfo.headshape;
     
     % Gets the sensor definition(s).
     elec      = traninfo.elec;
@@ -84,7 +84,7 @@ for findex = 1: numel ( files )
     % Converts all the data into SI units (meters).
     mesh      = ft_convert_units ( mesh, 'm' );
     grid      = ft_convert_units ( grid, 'm' );
-    headshape = ft_convert_units ( headshape, 'm' );
+    hshape    = ft_convert_units ( hshape, 'm' );
     grad      = ft_convert_units ( grad, 'm' );
     elec      = ft_convert_units ( elec, 'm' );
     
@@ -115,10 +115,10 @@ for findex = 1: numel ( files )
     
     
     % Gets the head shape points, the fiducials and the HPI coils.
-    hpiindex  = strncmp ( headshape.label, 'hpi_', 4 );
-    hpipos    = headshape.pos (  hpiindex, : );
-    hspos     = headshape.pos ( ~hpiindex, : );
-    fidpos    = headshape.fid.pos;
+    hpiindex  = strncmp ( hshape.label, 'hpi_', 4 );
+    hpipos    = hshape.pos (  hpiindex, : );
+    hspos     = hshape.pos ( ~hpiindex, : );
+    fidpos    = hshape.fid.pos;
     
     % Plots the head shape.
     ft_plot_mesh ( hspos, 'VertexColor', [ 0 0 1 ], 'VertexSize', 5 );
