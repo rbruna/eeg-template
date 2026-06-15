@@ -3,7 +3,7 @@ clear
 close all
 
 % Defines the location of the files.
-config.path.mri  = '../../template/anatomy/';
+config.path.anat = '../../template/anatomy/';
 config.path.head = '../../template/headmodel/';
 config.path.patt = '*.mat';
 
@@ -40,13 +40,13 @@ srctemp = load ( config.sources );
 
 
 % Gets the files list.
-files = dir ( sprintf ( '%s%s', config.path.mri, config.path.patt ) );
+files = dir ( sprintf ( '%s%s', config.path.anat, config.path.patt ) );
 
 % Goes through all the files.
 for findex = 1: numel ( files )
     
     % Pre-loads the anatomy.
-    mridata           = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'mesh' );
+    mridata           = load ( sprintf ( '%s%s', config.path.anat, files ( findex ).name ), 'subject', 'modality', 'mesh' );
     
     if strcmp ( config.model, 'ss' )
         meshtype          = 'singleshell';
@@ -60,10 +60,10 @@ for findex = 1: numel ( files )
     end
     
     
-    fprintf ( 1, 'Working on subject %s.\n', mridata.subject );
+    fprintf ( 1, 'Working on subject %s, modality %s.\n', mridata.subject, mridata.modality );
     
     % Loads the anatomy and the surface mesh(es).
-    mridata           = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'mri', 'landmark', 'transform', 'mesh', 'scalp' );
+    mridata           = load ( sprintf ( '%s%s', config.path.anat, files ( findex ).name ), 'subject', 'modality', 'mri', 'landmark', 'transform', 'mesh', 'scalp' );
     mri               = mridata.mri;
     transform         = mridata.transform;
     mesh              = mridata.mesh;
@@ -144,7 +144,7 @@ for findex = 1: numel ( files )
     headdata.mesh      = mesh;
     headdata.scalp     = mridata.scalp;
     headdata.grid      = srcmodel;
-    
+    return
     % Saves the head model.
     save ( '-v6', sprintf ( '%s%s_%s_%s.mat', config.path.head, headdata.subject, headdata.model, headdata.sources ), '-struct', 'headdata' );
 end

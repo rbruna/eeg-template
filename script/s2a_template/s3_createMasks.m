@@ -3,7 +3,7 @@ clear
 close all
 
 % Defines the location of the files.
-config.path.mri  = '../../template/anatomy/';
+config.path.anat = '../../template/anatomy/';
 config.path.patt = '*.mat';
 
 % Action when the anatomy has already been processed.
@@ -22,30 +22,30 @@ ft_hastoolbox ( 'spm8', 1, 1 );
 
 
 % Gets the file list.
-files = dir ( sprintf ( '%s%s', config.path.mri, config.path.patt ) );
+files = dir ( sprintf ( '%s%s', config.path.anat, config.path.patt ) );
 
 % Goes through all the files.
 for findex = 1: numel ( files )
     
     % Pre-loads the MRI.
-    mridata       = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'transform' );
+    mridata       = load ( sprintf ( '%s%s', config.path.anat, files ( findex ).name ), 'subject', 'modality', 'transform' );
     
     if ~isfield ( mridata.transform, 'mni2nat' )
-        fprintf ( 1, 'Ignoring subject %s (No yet segmented).\n', mridata.subject );
+        fprintf ( 1, 'Ignoring subject %s, modality %s (not yet segmented).\n', mridata.subject, mridata.modality );
         continue
     end
     
-    fileinfo      = whos ( '-file', sprintf ( '%s%s', config.path.mri, files ( findex ).name ) );
+    fileinfo      = whos ( '-file', sprintf ( '%s%s', config.path.anat, files ( findex ).name ) );
     if ismember ( 'mesh', { fileinfo.name } ) && ~config.overwrite
-        fprintf ( 1, 'Ignoring subject %s. (Surfaces already generated)\n', mridata.subject );
+        fprintf ( 1, 'Ignoring subject %s, modality %s (surfaces already generated).\n', mridata.subject, mridata.modality );
         continue
     end
     
     
-    fprintf ( 1, 'Working on subject %s.\n', mridata.subject );
+    fprintf ( 1, 'Working on subject %s, modality %s.\n', mridata.subject, mridata.modality );
     
     % Loads the MRI.
-    mridata       = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'mri', 'landmark', 'transform' );
+    mridata       = load ( sprintf ( '%s%s', config.path.anat, files ( findex ).name ), 'subject', 'modality', 'mri', 'landmark', 'transform' );
     mri           = mridata.mri;
     
     % Unpacks the MRI.
@@ -204,5 +204,5 @@ for findex = 1: numel ( files )
     mridata.mri   = mri;
     
     % Saves the masks.
-    save ( '-v6', sprintf ( '%s%s_3DT1', config.path.mri, mridata.subject ), '-struct', 'mridata' )
+    save ( '-v6', sprintf ( '%s%s_%s.mat', config.path.anat, mridata.subject, mridata.modality ), '-struct', 'mridata' )
 end

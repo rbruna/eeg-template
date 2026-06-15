@@ -3,13 +3,16 @@ clear
 close all
 
 % Sets the paths.
-config.path.tpm   = '../../template/tpm/ICBM-NY_TPM.nii.gz';
-config.path.mni   = '../../template/mni/MNI-ICBM152_3DT1.nii.gz';
-config.path.mri   = '../../template/anatomy/';
-config.path.patt  = '*.nii.gz';
+config.path.tpm  = '../../template/tpm/ICBM-NY_TPM.nii.gz';
+config.path.mni  = '../../template/mni/MNI-ICBM152_3DT1.nii.gz';
+config.path.anat = '../../template/anatomy/';
+config.path.patt = '*.nii.gz';
 
 % Defines the template label.
-config.subject    = 'ICBM-NY';
+config.subject   = 'ICBM-NY';
+
+% Defines the image modality.
+config.modality  = 'T1-template';
 
 
 % Adds the functions folders to the path.
@@ -25,7 +28,7 @@ ft_hastoolbox ( 'freesurfer', 1, 1 );
 
 
 % Creates and output folder, if required.
-if ~exist ( config.path.mri, 'dir' ), mkdir ( config.path.mri ); end
+if ~exist ( config.path.anat, 'dir' ), mkdir ( config.path.anat ); end
 
 
 fprintf ( 1, 'Loading the template anatomy and the tissue probability map.\n' );
@@ -136,9 +139,10 @@ fprintf ( 1, 'Saving the template-based segmentation file.\n' );
 % Prepares the output.
 mridata               = [];
 mridata.subject       = config.subject;
+mridata.modality      = config.modality;
 mridata.landmark      = landmark;
 mridata.transform     = transform;
 mridata.mri           = mri;
 
 % Saves the output.
-save ( '-v6', sprintf ( '%s%s_3DT1', config.path.mri, mridata.subject ), '-struct', 'mridata' )
+save ( '-v6', sprintf ( '%s%s_%s.mat', config.path.anat, mridata.subject, mridata.modality ), '-struct', 'mridata' )

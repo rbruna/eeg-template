@@ -32,13 +32,13 @@ files = dir ( sprintf ( '%s%s', config.path.mri, config.path.patt ) );
 for findex = 1: numel ( files )
     
     % Pre-loads the MRI.
-    mridata          = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject' );
+    mridata          = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'modality' );
     
     
-    fprintf ( 1, 'Working on subject %s.\n', mridata.subject );
+    fprintf ( 1, 'Working on subject %s, modality %s.\n', mridata.subject, mridata.modality );
     
     % Loads the MRI.
-    mridata          = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'mri' );
+    mridata          = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'modality', 'mri' );
     mri              = my_unpackmri ( mridata.mri );
     
     % Gets the segmented MRI.
@@ -69,10 +69,10 @@ for findex = 1: numel ( files )
     ft_sourceplot ( cfg, dummy );
     
     % Saves the figure.
-    print ( '-dpng', sprintf ( '%s%s.png', config.path.figs, mridata.subject ) )
+    print ( '-dpng', sprintf ( '%s%s_%s.png', config.path.figs, mridata.subject, mridata.modality ) )
     
     if config.savefig
-        savefig ( sprintf ( '%s%s.fig', config.path.figs, mridata.subject ) )
+        savefig ( sprintf ( '%s%s_%s.fig', config.path.figs, mridata.subject, mridata.modality ) )
     end
     close all
     clc
@@ -87,10 +87,10 @@ for findex = 1: numel ( files )
     ft_sourceplot ( cfg, dummy );
     
     % Saves the figure.
-    print ( '-dpng', sprintf ( '%s%s_slices.png', config.path.figs, mridata.subject ) )
+    print ( '-dpng', sprintf ( '%s%s_%s_slices.png', config.path.figs, mridata.subject, mridata.modality ) )
     
     if config.savefig
-        savefig ( sprintf ( '%s%s_slices.fig', config.path.figs, mridata.subject ) )
+        savefig ( sprintf ( '%s%s_%s_slices.fig', config.path.figs, mridata.subject, mridata.modality ) )
     end
     close all
     clc

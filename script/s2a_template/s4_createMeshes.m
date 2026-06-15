@@ -3,7 +3,7 @@ clear
 close all
 
 % Defines the location of the files.
-config.path.mri  = '../../template/anatomy/';
+config.path.anat = '../../template/anatomy/';
 config.path.patt = '*.mat';
 
 % Whether to sanitize (and reslize to 1mm3) prior to mesh generation.
@@ -40,25 +40,25 @@ ft_hastoolbox ( 'freesurfer', 1, 1 );
 
 
 % Gets the files list.
-files = dir ( sprintf ( '%s%s', config.path.mri, config.path.patt ) );
+files = dir ( sprintf ( '%s%s', config.path.anat, config.path.patt ) );
 
 % Goes through all the files.
 for findex = 1: numel ( files )
     
     % Pre-loads the MRI.
-    mridata          = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject' );
+    mridata          = load ( sprintf ( '%s%s', config.path.anat, files ( findex ).name ), 'subject', 'modality' );
     
-    fileinfo         = whos ( '-file', sprintf ( '%s%s', config.path.mri, files ( findex ).name ) );
+    fileinfo         = whos ( '-file', sprintf ( '%s%s', config.path.anat, files ( findex ).name ) );
     if ismember ( 'mesh', { fileinfo.name } ) && ~config.overwrite
-        fprintf ( 1, 'Ignoring subject %s (already calculated).\n', mridata.subject );
+        fprintf ( 1, 'Ignoring subject %s, modality %s (already calculated).\n', mridata.subject, mridata.modality );
         continue
     end
     
     
-    fprintf ( 1, 'Working on subject %s.\n', mridata.subject );
+    fprintf ( 1, 'Working on subject %s, modality %s.\n', mridata.subject, mridata.modality );
     
     % Loads the MRI data and extracts the masks.
-    mridata          = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'mri', 'landmark', 'transform' );
+    mridata          = load ( sprintf ( '%s%s', config.path.anat, files ( findex ).name ), 'subject', 'modality', 'mri', 'landmark', 'transform' );
     mri              = mridata.mri;
     
     % Unpacks the MRI.
@@ -293,5 +293,5 @@ for findex = 1: numel ( files )
     mridata.mesh     = mesh;
     
     % Saves the anatomy data.
-    save ( '-v6', sprintf ( '%s%s_3DT1', config.path.mri, mridata.subject ), '-struct', 'mridata' );
+    save ( '-v6', sprintf ( '%s%s_%s.mat', config.path.anat, mridata.subject, mridata.modality ), '-struct', 'mridata' );
 end

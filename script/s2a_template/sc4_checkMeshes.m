@@ -39,13 +39,13 @@ files = dir ( sprintf ( '%s%s', config.path.mri, config.path.patt ) );
 for findex = 1: numel ( files )
     
     % Pre-loads the data.
-    mridata       = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject' );
+    mridata       = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'modality' );
     
     
-    fprintf ( 1, 'Working with subject ''%s''.\n', mridata.subject );
+    fprintf ( 1, 'Working with subject %s, modality %s.\n', mridata.subject, mridata.modality );
     
     % Loads the MRI data and extracts the masks.
-    mridata       = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'mri', 'mesh' );
+    mridata       = load ( sprintf ( '%s%s', config.path.mri, files ( findex ).name ), 'subject', 'modality', 'mri', 'mesh' );
     
     
     % If BEM, checks the geometry using OpenMEEG.
@@ -103,12 +103,12 @@ for findex = 1: numel ( files )
     
     
     % Saves the figure.
-    print ( '-dpng', sprintf ( '%s%s.png', config.path.figs, mridata.subject ) )
+    print ( '-dpng', sprintf ( '%s%s_%s.png', config.path.figs, mridata.subject, mridata.modality ) )
     if config.savefig
-        savefig ( sprintf ( '%s%s.fig', config.path.figs, mridata.subject ) )
+        savefig ( sprintf ( '%s%s_%s.fig', config.path.figs, mridata.subject, mridata.modality ) )
     end
     if config.savegif
-        my_savegif ( sprintf ( '%s%s.gif', config.path.figs, mridata.subject ) )
+        my_savegif ( sprintf ( '%s%s_%s.gif', config.path.figs, mridata.subject, mridata.modality ) )
     end
     close all
 end
